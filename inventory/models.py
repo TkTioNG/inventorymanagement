@@ -4,7 +4,7 @@ from django.db import models
 class Store(models.Model):
     store_id = models.AutoField(primary_key=True)
     store_name = models.CharField(max_length=100, unique=True)
-    products = models.ManyToManyField('Product')
+    products = models.ManyToManyField('Product', blank=True)
     user = models.ForeignKey(
         'auth.User', on_delete=models.CASCADE, related_name='stores')
 
