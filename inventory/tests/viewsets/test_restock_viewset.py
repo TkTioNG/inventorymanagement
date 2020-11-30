@@ -12,8 +12,8 @@ class RestockViewSetTestCases(BaseTestCase):
         """Create restock data"""
         super().setUp()
         store = StoreFactory(user=self.user)
-        self.data = MaterialStockFactory(
-            store=store, current_capacity=10, max_capacity=100)
+        self.data = MaterialStockFactory.create_batch(
+            3, store=store, current_capacity=10, max_capacity=100)
 
     def modify_data_quantity(self, quantity=50):
         """Modify the current capacity of the MaterialStock object"""

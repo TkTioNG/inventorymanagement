@@ -139,6 +139,9 @@ class SalesSerializer(serializers.Serializer):
                 sale = self.initial_data.get("sale")
                 for product_sold in sale:
                     sold_quantity = product_sold.get('quantity')
+                    if not isinstance(sold_quantity, int) or sold_quantity < 0:
+                        raise ValidationError(
+                            detail="Sold quantity should be valid integer")
                     material_quantities_need = MaterialQuantity.objects.filter(
                         product=product_sold.get('product'))
                     for material_quantity in material_quantities_need:

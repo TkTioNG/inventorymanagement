@@ -44,7 +44,7 @@ class MaterialStockFactory(factory.django.DjangoModelFactory):
     store = factory.SubFactory(StoreFactory)
     material = factory.SubFactory(MaterialFactory)
     max_capacity = factory.Faker('pyint', min_value=1000, max_value=9999)
-    current_capacity = factory.Faker('pyint', max_value=1000)
+    current_capacity = factory.Faker('pyint', min_value=100, max_value=1000)
 
     class Meta:
         model = MaterialStock
