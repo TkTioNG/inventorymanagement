@@ -4,7 +4,8 @@ from django.db import models
 class Store(models.Model):
     store_id = models.AutoField(primary_key=True)
     store_name = models.CharField(max_length=100, unique=True)
-    products = models.ManyToManyField('Product', blank=True)
+    products = models.ManyToManyField(
+        'Product', blank=True, related_name="stores")
     user = models.ForeignKey(
         'auth.User', on_delete=models.CASCADE, related_name='stores')
 
@@ -24,6 +25,8 @@ class MaterialStock(models.Model):
                 max_capacity__gt=0), name='max_capacity__gt_0'),
             models.CheckConstraint(check=models.Q(current_capacity__gte=0) & models.Q(
                 current_capacity__lte=models.F('max_capacity')), name='current_capacity_valid'),
+            models.UniqueConstraint(
+                fields=['store', 'material'], name='unique_store_material')
         ]
 
 
