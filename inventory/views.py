@@ -36,6 +36,17 @@ class MaterialStockViewSet(viewsets.ModelViewSet):
     queryset = MaterialStock.objects.all()
     serializer_class = MaterialStockSerializer
 
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = request.data
+        if 'current_capacity' in data:
+            del data['current_capacity']
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
 
 class MaterialQuantityViewSet(viewsets.ModelViewSet):
     queryset = MaterialQuantity.objects.all()
