@@ -62,7 +62,7 @@ class SalesTestCases(BaseTestCase):
         response = self.client.post('/api/v1/sales/', data=self.invalid_data,
                                     HTTP_AUTHORIZATION=self.formatted_token)
 
-        # Verify access allow
+        # Verify operation denial
         self.assertEqual(response.status_code, 400)
 
         # TODO: Update sale
