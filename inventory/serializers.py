@@ -53,8 +53,8 @@ class RestockSerializer(serializers.ModelSerializer):
         return quantity
 
     def update(self, instance, validated_data):
-        print(self.initial_data)
-        instance.current_capacity = self.initial_data.get('quantity')
+        instance.current_capacity = instance.current_capacity + \
+            self.initial_data.get('quantity')
         instance.save()
 
         return instance
