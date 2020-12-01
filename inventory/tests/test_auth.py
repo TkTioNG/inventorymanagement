@@ -15,22 +15,40 @@ class TokenAuthorizationTestCases(APITestCase):
         self.user = UserFactory.create(password=password)
         self.token = Token.objects.create(user=self.user)
 
-    def test_get_with_auth(self):
-        """GET restock endpoint with token authorization"""
         store = StoreFactory(user=self.user)
         material_stock = MaterialStockFactory.create_batch(3, store=store)
+        self.data = self.get_formatted_data(material_stock)
+        self.post_data = self.get_formatted_data(
+            material_stock, quantity=factory.Faker('pyint', max_value=99))
+
+    def get_formatted_data(self, ms_obj, quantity=0):
+        """Update the serialized data with current MaterialStock obj"""
+        materials_array = []
+        for ms in ms_obj:
+            if quantity == 0:
+                materials_array.append({
+                    "material": ms.material.material_id,
+                    "quantity": ms.quantity
+                })
+            else:
+                materials_array.append({
+                    "material": ms.material.material_id,
+                    "quantity": quantity
+                })
+        return {
+            "materials": materials_array,
+            "total_price": get_restock_total_price(ms_obj),
+        }
+
+    def test_get_with_auth(self):
+        """GET restock endpoint with token authorization"""
         response = self.client.get(
             '/api/v1/restock/', HTTP_AUTHORIZATION='Token {}'.format(self.token))
 
         # Access allow
         self.assertEqual(response.status_code, 200)
 
-        expected_params = {
-            "materials": [],  # TODO: Update materials
-            "total_price": get_restock_total_price(material_stock),
-        }
-
-        self.assertEqual(response.json(), expected_params)
+        self.assertEqual(response.json(), self.data)
 
     def test_get_without_auth(self):
         """GET restock endpoint without token authorization"""
@@ -43,35 +61,25 @@ class TokenAuthorizationTestCases(APITestCase):
         """GET restock endpoint with wrong token authorization"""
         response = self.client.get(
             '/api/v1/restock/', HTTP_AUTHORIZATION='Token {}'.format(factory.Faker('pyint')))
+
         # Verify access denied
         self.assertEqual(response.status_code, 401)
 
     def test_post_with_auth(self):
         """POST restock endpoint with token authorization"""
-        store = StoreFactory(user=self.user)
-        material_stocks = MaterialStockFactory.create_batch(3, store=store)
-
-        post_data = {
-            "materials": [],  # TODO: Update materials array
-        }
 
         response = self.client.post(
-            '/api/v1/restock/', data=post_data, HTTP_AUTHORIZATION='Token {}'.format(self.token))
+            '/api/v1/restock/', data=self.post_data, HTTP_AUTHORIZATION='Token {}'.format(self.token))
 
         # Verify access
         self.assertEqual(response.status_code, 200)
 
-        # TODO: Update expected restock params
-        expected_params = {
-            "materials": [],
-            "total_price": 0,
-        }
         # Verify response content
-        self.assertEqual(response.json(), expected_params)
+        self.assertEqual(response.json(), self.post_data)
 
     def test_post_without_auth(self):
         """POST restock endpoint without token authorization"""
-        response = self.client.post('/api/v1/restock/')
+        response = self.client.post('/api/v1/restock/', data=self.post_data)
 
         # Verify access denial
         self.assertEqual(response.status_code, 401)
@@ -79,7 +87,7 @@ class TokenAuthorizationTestCases(APITestCase):
     def test_post_with_wrong_auth(self):
         """POST restock endpoint with wrong token authorization"""
         response = self.client.post(
-            '/api/v1/restock/', HTTP_AUTHORIZATION='Token {}'.format(factory.Faker('pyint')))
+            '/api/v1/restock/', data=self.post_data, HTTP_AUTHORIZATION='Token {}'.format(factory.Faker('pyint')))
 
         # Verify access denial
         self.assertEqual(response.status_code, 401)

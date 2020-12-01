@@ -1,4 +1,4 @@
-from inventory.tests.test_viewsets import BaseTestCase
+from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
 
@@ -22,13 +22,13 @@ class ProductCapacityTestCases(BaseTestCase):
         ms3 = MaterialStockFactory(store=self.store, current_capacity=50)
         # Link material with product
         MaterialQuantityFactory(
-            quantity=6, product=product1, material=ms1.material)
+            quantity=6, product=product1, ingredient=ms1.material)
         MaterialQuantityFactory(
-            quantity=7, product=product1, material=ms2.material)
+            quantity=7, product=product1, ingredient=ms2.material)
         MaterialQuantityFactory(
-            quantity=5, product=product2, material=ms2.material)
+            quantity=5, product=product2, ingredient=ms2.material)
         MaterialQuantityFactory(
-            quantity=10, product=product2, material=ms3.material)
+            quantity=10, product=product2, ingredient=ms3.material)
 
     def test_get_product_capacity(self):
         """Verify the format and the remaining capacity for each products in the store"""

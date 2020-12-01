@@ -1,4 +1,4 @@
-from inventory.tests.test_viewsets import BaseTestCase
+from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory
 from inventory.utils import get_restock_total_price
@@ -23,7 +23,7 @@ class RestockViewSetTestCases(BaseTestCase):
                 "material": dt.material.material_id,
                 "quantity": quantity
             })
-        return {"materials": array}
+        return array
 
     def test_get_restock(self):
         """Verify that the material stock and the total price are correctly serialized"""
@@ -50,7 +50,7 @@ class RestockViewSetTestCases(BaseTestCase):
         }
 
         response = self.client.post(
-            '/api/v1/restock/', data=post_data, HTTP_AUTHORIZATION=self.formatted_token)
+            '/api/v1/restock/', data=post_data, format='json', HTTP_AUTHORIZATION=self.formatted_token)
 
         # Verify access
         self.assertEqual(response.status_code, 200)
@@ -73,7 +73,7 @@ class RestockViewSetTestCases(BaseTestCase):
         }
 
         response = self.client.post(
-            '/api/v1/restock/', data=post_data, HTTP_AUTHORIZATION=self.formatted_token)
+            '/api/v1/restock/', data=post_data, format='json', HTTP_AUTHORIZATION=self.formatted_token)
 
         # Verify bad request
         self.assertEqual(response.status_code, 400)
@@ -96,7 +96,7 @@ class RestockViewSetTestCases(BaseTestCase):
         }
 
         response = self.client.post(
-            '/api/v1/restock/', data=post_data, HTTP_AUTHORIZATION=self.formatted_token)
+            '/api/v1/restock/', data=post_data, format='json', HTTP_AUTHORIZATION=self.formatted_token)
 
         # Verify bad request
         self.assertEqual(response.status_code, 400)

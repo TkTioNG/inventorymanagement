@@ -79,8 +79,10 @@ class RestockViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.Ge
 
     def create(self, request, *args, **kwargs):
         materials = request.data.get('materials')
-
+        print(request.data)
+        print(materials)
         for material in materials:
+            print(material)
             instance = self.get_queryset().get(material=material.get('material'))
             serializer = self.get_serializer(
                 instance=instance, data=material, partial=True)

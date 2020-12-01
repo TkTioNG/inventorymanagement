@@ -1,4 +1,4 @@
-from inventory.tests.test_viewsets import BaseTestCase
+from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
 
@@ -14,13 +14,13 @@ class SalesTestCases(BaseTestCase):
         product = ProductFactory()
         # create Store
         store = StoreFactory.create(
-            user=self.user, products=(product))
+            user=self.user, products=(product,))
         # Create material
         material_stock = MaterialStockFactory(store=store)
 
         # Link material with product
         MaterialQuantityFactory(
-            product=product, material=material_stock.material)
+            product=product, ingredient=material_stock.material)
 
         self.data = {
             "sale":
@@ -43,7 +43,7 @@ class SalesTestCases(BaseTestCase):
 
     def test_sold_product_valid(self):
         """Verify selling of product without running out of material"""
-        response = self.client.post('/api/v1/sales/', data=self.data,
+        response = self.client.post('/api/v1/sales/', data=self.data, format='json',
                                     HTTP_AUTHORIZATION=self.formatted_token)
 
         # Verify access allow
@@ -59,7 +59,7 @@ class SalesTestCases(BaseTestCase):
 
     def test_sold_product_out_of_material(self):
         """Verify do not sell product than ran out of material"""
-        response = self.client.post('/api/v1/sales/', data=self.invalid_data,
+        response = self.client.post('/api/v1/sales/', data=self.invalid_data, format='json',
                                     HTTP_AUTHORIZATION=self.formatted_token)
 
         # Verify operation denial

@@ -1,4 +1,4 @@
-from inventory.tests.test_viewsets import BaseTestCase
+from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
 
@@ -36,7 +36,7 @@ class MaterialStockTestCases(BaseTestCase):
 
     def test_update_capacity(self):
         """Verify update of maximum capacity and inability to update current capacity"""
-        response = self.client.post('/api/v1/material-stock/', data=self.data,
+        response = self.client.post('/api/v1/material-stock/', data=self.data, format='json',
                                     HTTP_AUTHORIZATION=self.formatted_token)
 
         # Verify access allow
@@ -49,7 +49,7 @@ class MaterialStockTestCases(BaseTestCase):
 
     def test_update_capacity_invalid(self):
         """Verify that do not updatewhen maximum capacity < current capacity"""
-        response = self.client.post('/api/v1/material-stock/', data=self.invalid_data,
+        response = self.client.post('/api/v1/material-stock/', data=self.invalid_data, format='json',
                                     HTTP_AUTHORIZATION=self.formatted_token)
 
         # Verify operation denial

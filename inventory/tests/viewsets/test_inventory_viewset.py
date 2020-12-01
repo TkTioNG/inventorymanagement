@@ -1,4 +1,4 @@
-from inventory.tests.test_viewsets import BaseTestCase
+from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory
 
