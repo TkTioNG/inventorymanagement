@@ -82,9 +82,9 @@ class InventorySerializer(serializers.ModelSerializer):
 
 
 class ProductCapacitySerializer(serializers.ModelSerializer):
-    remaining_capacity = serializers.SerializerMethodField()
+    remaining_capacities = serializers.SerializerMethodField()
 
-    def get_remaining_capacity(self, obj):
+    def get_remaining_capacities(self, obj):
         data = []
         for product in obj.products.all():
             material_quantities_need = MaterialQuantity.objects.filter(
@@ -106,7 +106,7 @@ class ProductCapacitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Store
-        fields = ('remaining_capacity',)
+        fields = ('remaining_capacities',)
 
 
 class SalesSerializer(serializers.Serializer):

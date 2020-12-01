@@ -40,7 +40,7 @@ class ProductCapacityTestCases(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Get expected results
-        expected_params = ProductCapacitySerializer(instance=self.store).data,
+        expected_params = ProductCapacitySerializer(instance=self.store).data
 
         self.assertEqual(response.json(), expected_params)
 

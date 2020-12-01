@@ -17,16 +17,6 @@ class RestockViewSetTestCases(BaseTestCase):
         self.data = MaterialStockFactory.create_batch(
             3, store=store, current_capacity=10, max_capacity=100)
 
-    def modify_data_quantity(self, quantity=50):
-        """Modify the current capacity of the MaterialStock object"""
-        array = []
-        for dt in self.data:
-            array.append({
-                "material": dt.material.material_id,
-                "quantity": quantity
-            })
-        return array
-
     def test_get_restock(self):
         """Verify that the material stock and the total price are correctly serialized"""
         response = self.client.get('/api/v1/restock/',
@@ -47,7 +37,7 @@ class RestockViewSetTestCases(BaseTestCase):
         """Verify that update of the stock quantity with valid data"""
 
         post_data = {
-            "materials": self.modify_data_quantity(),
+            "materials": self._modify_data_quantity(),
         }
 
         response = self.client.post(
@@ -78,7 +68,7 @@ class RestockViewSetTestCases(BaseTestCase):
 
         # current_capacity (10 + 91) > max_capacity (100)
         post_data = {
-            "materials": self.modify_data_quantity(91),
+            "materials": self._modify_data_quantity(91),
         }
 
         response = self.client.post(
@@ -92,7 +82,7 @@ class RestockViewSetTestCases(BaseTestCase):
 
         # current_capacity < 0
         post_data = {
-            "materials": self.modify_data_quantity(-11),
+            "materials": self._modify_data_quantity(-11),
         }
 
         response = self.client.post(
@@ -100,3 +90,13 @@ class RestockViewSetTestCases(BaseTestCase):
 
         # Verify bad request
         self.assertEqual(response.status_code, 400)
+
+    def _modify_data_quantity(self, quantity=50):
+        """Modify the current capacity of the MaterialStock object"""
+        array = []
+        for dt in self.data:
+            array.append({
+                "material": dt.material.material_id,
+                "quantity": quantity
+            })
+        return array
