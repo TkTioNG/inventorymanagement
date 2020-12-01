@@ -53,6 +53,11 @@ class RestockSerializer(serializers.ModelSerializer):
         return quantity
 
     def update(self, instance, validated_data):
+        if instance.current_capacity + self.initial_data.get('quantity') > instance.max_capacity \
+                or self.initial_data.get('quantity') < 0:
+            raise ValidationError(
+                detail="Current capacity cannot be greater than max capacity or negative value")
+
         instance.current_capacity = instance.current_capacity + \
             self.initial_data.get('quantity')
         instance.save()
@@ -64,7 +69,7 @@ class RestockSerializer(serializers.ModelSerializer):
         fields = ('material', 'quantity',)
 
 
-class StoreCapacityPercentageSerializer(serializers.ModelSerializer):
+class InventorySerializer(serializers.ModelSerializer):
     percentage_of_capacity = serializers.SerializerMethodField()
 
     def get_percentage_of_capacity(self, obj):
@@ -160,7 +165,7 @@ class SalesSerializer(serializers.Serializer):
                 self._errors = {}
 
         if self._errors and raise_exception:
-            raise ValidationError(self.errors)
+            raise ValidationError(self._errors)
 
         return not bool(self._errors)
 
@@ -175,6 +180,9 @@ class SalesSerializer(serializers.Serializer):
                 material_quantity_needed = material_quantity.quantity
                 material_stock_obj = self.instance.material_stocks.get(
                     material=material_quantity.ingredient)
+                if (material_stock_obj.current_capacity < material_quantity_needed * sold_quantity):
+                    raise ValidationError(detail="Ingredient - {0} is not enough for product - {1}".format(
+                        material_quantity.ingredient, material_quantity.product))
                 material_stock_obj.current_capacity = material_stock_obj.current_capacity - \
                     material_quantity_needed * sold_quantity
                 material_stock_obj.save()

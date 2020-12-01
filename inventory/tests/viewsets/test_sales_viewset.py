@@ -16,11 +16,12 @@ class SalesTestCases(BaseTestCase):
         store = StoreFactory.create(
             user=self.user, products=(product,))
         # Create material
-        material_stock = MaterialStockFactory(store=store)
+        material_stock = MaterialStockFactory(
+            store=store, current_capacity=100)
 
         # Link material with product
         MaterialQuantityFactory(
-            product=product, ingredient=material_stock.material)
+            product=product, ingredient=material_stock.material, quantity=10)
 
         self.data = {
             "sale":
@@ -36,7 +37,7 @@ class SalesTestCases(BaseTestCase):
             [
                 {
                     "product": product.product_id,
-                    "quantity": 1,
+                    "quantity": 100,
                 },
             ]
         }
@@ -59,16 +60,8 @@ class SalesTestCases(BaseTestCase):
 
     def test_sold_product_out_of_material(self):
         """Verify do not sell product than ran out of material"""
-        response = self.client.post('/api/v1/sales/', data=self.invalid_data, format='json',
-                                    HTTP_AUTHORIZATION=self.formatted_token)
+        response = self.client.post('/api/v1/sales/', data=self.invalid_data,
+                                    format='json', HTTP_AUTHORIZATION=self.formatted_token)
 
         # Verify operation denial
         self.assertEqual(response.status_code, 400)
-
-        # TODO: Update sale
-        # sale = SalesSerializer(self.store).data
-        expected_params = {
-            "sale": [],
-        }
-        # Verify that the sales does not update
-        self.assertEqual(response.json(), expected_params)

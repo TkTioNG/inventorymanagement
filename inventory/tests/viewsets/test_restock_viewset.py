@@ -1,6 +1,8 @@
 from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory
+from inventory.models import MaterialStock
+from inventory.serializers import RestockSerializer
 from inventory.utils import get_restock_total_price
 
 
@@ -33,13 +35,12 @@ class RestockViewSetTestCases(BaseTestCase):
         # Access allow
         self.assertEqual(response.status_code, 200)
 
-        # TODO: Update materials
-        # material = RestockSerializer(instance=self.data, many=True).data
+        # Get expected results
         expected_params = {
-            "materials": [],
+            "materials": RestockSerializer(instance=self.data, many=True).data,
             "total_price": get_restock_total_price(self.data),
         }
-
+        # Verify expected results
         self.assertEqual(response.json(), expected_params)
 
     def test_post_restock(self):
@@ -55,21 +56,29 @@ class RestockViewSetTestCases(BaseTestCase):
         # Verify access
         self.assertEqual(response.status_code, 200)
 
-        # TODO: Update expected restock params from serializer
-        # material = RestockSerializer(instance=self.data, many=True).data
+        # Get objects from database
+        updated_objects = MaterialStock.objects.filter(pk__lte=3)
+
+        # Get expected results
         expected_params = {
-            "materials": [],
-            "total_price": get_restock_total_price(self.data),
+            "materials": RestockSerializer(instance=updated_objects, many=True).data,
+            "total_price": get_restock_total_price(updated_objects),
         }
         # Verify response content
         self.assertEqual(response.json(), expected_params)
 
+        # Verify database update
+        for updated_obj in updated_objects:
+            # Make sure that the capacity is updated correctly
+            self.assertEqual(updated_obj.max_capacity, 100)
+            self.assertEqual(updated_obj.current_capacity, 60)
+
     def test_post_restock_exceed(self):
         """Verify that stock quantity does not update when current capacity > max_capacity"""
 
-        # current_capacity > max_capacity (100)
+        # current_capacity (10 + 91) > max_capacity (100)
         post_data = {
-            "materials": self.modify_data_quantity(101),
+            "materials": self.modify_data_quantity(91),
         }
 
         response = self.client.post(
@@ -77,22 +86,13 @@ class RestockViewSetTestCases(BaseTestCase):
 
         # Verify bad request
         self.assertEqual(response.status_code, 400)
-
-        # TODO: Update expected restock params from serializer
-        # material = RestockSerializer(instance=self.data, many=True).data
-        expected_params = {
-            "materials": [],
-            "total_price": get_restock_total_price(self.data),
-        }
-        # Verify response that the quantity do not update
-        self.assertEqual(response.json(), expected_params)
 
     def test_post_restock_negative(self):
         """Verify that stock quantity does not update when current capacity < 0"""
 
         # current_capacity < 0
         post_data = {
-            "materials": self.modify_data_quantity(-1),
+            "materials": self.modify_data_quantity(-11),
         }
 
         response = self.client.post(
@@ -100,12 +100,3 @@ class RestockViewSetTestCases(BaseTestCase):
 
         # Verify bad request
         self.assertEqual(response.status_code, 400)
-
-        # TODO: Update expected restock params from serializer
-        # material = RestockSerializer(instance=self.data, many=True).data
-        expected_params = {
-            "materials": [],
-            "total_price": get_restock_total_price(self.data),
-        }
-        # Verify response that the quantity do not update
-        self.assertEqual(response.json(), expected_params)

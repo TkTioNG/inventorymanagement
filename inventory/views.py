@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework import viewsets, mixins
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
 
@@ -9,7 +10,7 @@ from inventory.models import Store, Material, MaterialStock, MaterialQuantity, P
 from inventory.serializers import (
     UserSerializer, StoreSerializer, MaterialSerializer, MaterialStockSerializer,
     MaterialQuantitySerializer, ProductSerializer, RestockSerializer,
-    StoreCapacityPercentageSerializer, ProductCapacitySerializer, SalesSerializer
+    InventorySerializer, ProductCapacitySerializer, SalesSerializer
 )
 from inventory.utils import get_restock_total_price
 
@@ -28,8 +29,10 @@ class StoreViewSet(viewsets.ModelViewSet):
 
 
 class MaterialViewSet(viewsets.ModelViewSet):
-    queryset = Material.objects.all()
     serializer_class = MaterialSerializer
+
+    def get_queryset(self):
+        return Material.objects.filter(material_stocks__store__user=self.request.user)
 
 
 class MaterialStockViewSet(viewsets.ModelViewSet):
@@ -39,6 +42,9 @@ class MaterialStockViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         data = request.data
+        if instance.current_capacity > data["max_capacity"]:
+            raise ValidationError(
+                detail="max_capacity cannot be smaller than current_capacity")
         if 'current_capacity' in data:
             del data['current_capacity']
         serializer = self.get_serializer(instance, data=data, partial=True)
@@ -89,7 +95,7 @@ class RestockViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.Ge
 
 
 class InventoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    serializer_class = StoreCapacityPercentageSerializer
+    serializer_class = InventorySerializer
 
     def get_queryset(self):
         return MaterialStock.objects.filter(store__user=self.request.user)

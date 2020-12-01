@@ -1,6 +1,7 @@
 from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
+from inventory.serializers import ProductCapacitySerializer
 
 
 class ProductCapacityTestCases(BaseTestCase):
@@ -38,11 +39,8 @@ class ProductCapacityTestCases(BaseTestCase):
         # Verify access allow
         self.assertEqual(response.status_code, 200)
 
-        # TODO: Update materials
-        # material = ProductCapacitySerializer(instance=self.store).data
-        expected_params = {
-            "remaining_capacities": [],
-        }
+        # Get expected results
+        expected_params = ProductCapacitySerializer(instance=self.store).data,
 
         self.assertEqual(response.json(), expected_params)
 
