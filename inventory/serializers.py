@@ -169,7 +169,7 @@ class SalesSerializer(serializers.Serializer):
 
         return not bool(self._errors)
 
-    def create(self):
+    def update(self, instance, validated_data):
         sale = self.validated_data.get('sale')
 
         for product_sold in sale:
@@ -180,9 +180,6 @@ class SalesSerializer(serializers.Serializer):
                 material_quantity_needed = material_quantity.quantity
                 material_stock_obj = self.instance.material_stocks.get(
                     material=material_quantity.ingredient)
-                if (material_stock_obj.current_capacity < material_quantity_needed * sold_quantity):
-                    raise ValidationError(detail="Ingredient - {0} is not enough for product - {1}".format(
-                        material_quantity.ingredient, material_quantity.product))
                 material_stock_obj.current_capacity = material_stock_obj.current_capacity - \
                     material_quantity_needed * sold_quantity
                 material_stock_obj.save()

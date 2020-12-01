@@ -1,6 +1,8 @@
 from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
+from inventory.models import MaterialStock
+from inventory.serializers import SalesSerializer
 
 
 class SalesTestCases(BaseTestCase):
@@ -10,25 +12,39 @@ class SalesTestCases(BaseTestCase):
     def setUp(self):
         """Create restock data"""
         super().setUp()
-        # Create product
-        product = ProductFactory()
+        # Create products
+        product1 = ProductFactory()
+        product2 = ProductFactory()
+        product3 = ProductFactory()
         # create Store
-        store = StoreFactory.create(
-            user=self.user, products=(product,))
+        self.store = StoreFactory.create(
+            user=self.user, products=(product1, product2, product3,))
         # Create material
         material_stock = MaterialStockFactory(
-            store=store, current_capacity=100)
+            store=self.store, current_capacity=100)
 
-        # Link material with product
+        # Link material with products
         MaterialQuantityFactory(
-            product=product, ingredient=material_stock.material, quantity=10)
+            product=product1, ingredient=material_stock.material, quantity=10)
+        MaterialQuantityFactory(
+            product=product2, ingredient=material_stock.material, quantity=10)
+        MaterialQuantityFactory(
+            product=product3, ingredient=material_stock.material, quantity=10)
 
         self.data = {
             "sale":
             [
                 {
-                    "product": product.product_id,
+                    "product": product1.product_id,
                     "quantity": 1,
+                },
+                {
+                    "product": product2.product_id,
+                    "quantity": 2,
+                },
+                {
+                    "product": product3.product_id,
+                    "quantity": 3,
                 },
             ]
         }
@@ -36,7 +52,7 @@ class SalesTestCases(BaseTestCase):
             "sale":
             [
                 {
-                    "product": product.product_id,
+                    "product": product1.product_id,
                     "quantity": 100,
                 },
             ]
@@ -50,13 +66,17 @@ class SalesTestCases(BaseTestCase):
         # Verify access allow
         self.assertEqual(response.status_code, 200)
 
-        # TODO: Update sale
-        # sale = SalesSerializer(self.store).data
-        expected_params = {
-            "sale": [],
-        }
+        # Get expected data
+        expected_params = SalesSerializer(self.store).data
+
         # Verify the sales content
         self.assertEqual(response.json(), expected_params)
+
+        material_stock = MaterialStock.objects.last()
+
+        # Verify the current capacity of the ingredient is updated correctly
+        self.assertEqual(material_stock.current_capacity,
+                         40)  # 100 - 10 - 20 - 30
 
     def test_sold_product_out_of_material(self):
         """Verify do not sell product than ran out of material"""

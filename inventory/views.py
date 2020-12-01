@@ -144,7 +144,6 @@ class SalesViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.Gene
 
         serializer.is_valid(raise_exception=True)
 
-        serializer.create()
+        serializer.save()
 
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data)
