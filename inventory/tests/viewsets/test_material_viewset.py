@@ -1,3 +1,4 @@
+from decimal import Decimal
 from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialFactory, MaterialStockFactory
@@ -40,9 +41,12 @@ class MaterialTestCases(BaseTestCase):
         if many:
             expected_params = []
             for obj in objects:
-                expected_params.append(
-                    get_model_obj_property(Material, obj)
+                material_obj = get_model_obj_property(Material, obj)
+                # JSON serialize Decimal object as string
+                material_obj["price"] = str(
+                    material_obj["price"].quantize(Decimal("0.01"))
                 )
+                expected_params.append(material_obj)
             return expected_params
 
         return get_model_obj_property(Material, obj)

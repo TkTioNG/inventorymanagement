@@ -2,6 +2,7 @@ from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
 from inventory.models import MaterialStock
+from inventory.utils import get_product_remaining_capacities
 
 
 class SalesTestCases(BaseTestCase):
@@ -83,7 +84,7 @@ class SalesTestCases(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Verify the sales content
-        self.assertEqual(response.json(), self.data)
+        self.assertEqual(response.json(), self._get_expected_params())
 
         material_stock = MaterialStock.objects.last()
 
@@ -102,3 +103,9 @@ class SalesTestCases(BaseTestCase):
 
         # Verify operation denial
         self.assertEqual(response.status_code, 400)
+
+    def _get_expected_params(self):
+        """Get expected results"""
+        return {
+            "sale": get_product_remaining_capacities(self.store)
+        }

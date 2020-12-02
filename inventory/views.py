@@ -129,18 +129,11 @@ class ProductCapacityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class SalesViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+class SalesViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = SalesSerializer
 
     def get_queryset(self):
         return Store.objects.get(user=self.request.user)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        serializer = self.get_serializer(queryset)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
