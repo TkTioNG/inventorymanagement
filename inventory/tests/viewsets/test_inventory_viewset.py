@@ -1,7 +1,6 @@
 from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory
-from inventory.serializers import InventorySerializer
 
 
 class InventoryTestCases(BaseTestCase):
@@ -31,9 +30,8 @@ class InventoryTestCases(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Get expected results
-        expected_params = {
-            "materials": InventorySerializer(instance=self.data, many=True).data,
-        }
+        expected_params = self._get_expected_params()
+
         # Verify serialized content
         self.assertEqual(response.json(), expected_params)
 
@@ -42,3 +40,19 @@ class InventoryTestCases(BaseTestCase):
         expected_poc = 66.67  # round(60/90, 2), 2 d.p.
         # Verify decimal points of percentage_of_capacity
         self.assertEqual(received_poc, expected_poc)
+
+    def _get_expected_params(self):
+        """Get expected results"""
+        array = []
+        for material_stock in self.data:
+            poc = float(round(
+                material_stock.current_capacity / material_stock.max_capacity * 100,
+                2
+            ))
+            array.append({
+                "material": material_stock.material.pk,
+                "max_capacity": material_stock.max_capacity,
+                "current_capacity": material_stock.current_capacity,
+                "percentage_of_capacity": poc,
+            })
+        return {"materials": array}

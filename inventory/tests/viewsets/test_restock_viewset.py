@@ -2,7 +2,6 @@ from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory
 from inventory.models import MaterialStock
-from inventory.serializers import RestockSerializer
 from inventory.utils import get_restock_total_price
 
 
@@ -32,10 +31,8 @@ class RestockViewSetTestCases(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Get expected results
-        expected_params = {
-            "materials": RestockSerializer(instance=self.data, many=True).data,
-            "total_price": get_restock_total_price(self.data),
-        }
+        expected_params = self._get_expected_params(self.data)
+
         # Verify expected results
         self.assertEqual(response.json(), expected_params)
 
@@ -60,10 +57,8 @@ class RestockViewSetTestCases(BaseTestCase):
         updated_objects = MaterialStock.objects.filter(pk__lte=3)
 
         # Get expected results
-        expected_params = {
-            "materials": RestockSerializer(instance=updated_objects, many=True).data,
-            "total_price": get_restock_total_price(updated_objects),
-        }
+        expected_params = self._get_expected_params(updated_objects)
+
         # Verify response content
         self.assertEqual(response.json(), expected_params)
 
@@ -118,3 +113,23 @@ class RestockViewSetTestCases(BaseTestCase):
                 "quantity": quantity
             })
         return array
+
+    def _get_expected_params(self, objects):
+        """Get expected results"""
+        materials = []
+        for obj in objects:
+            materials.append(self._get_expected_obj(obj))
+
+        expected_params = {
+            "materials": materials,
+            "total_price": get_restock_total_price(objects)
+        }
+        return expected_params
+
+    def _get_expected_obj(self, obj):
+        """Change foreign key from model obj to pk"""
+        expected_obj = {
+            "material": obj.material.pk,
+            "quantity": obj.max_capacity - obj.current_capacity
+        }
+        return expected_obj

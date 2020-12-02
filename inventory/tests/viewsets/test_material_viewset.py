@@ -1,7 +1,8 @@
 from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialFactory, MaterialStockFactory
-from inventory.serializers import MaterialSerializer
+from inventory.models import Material
+from inventory.utils import get_model_obj_property
 
 
 class MaterialTestCases(BaseTestCase):
@@ -18,9 +19,8 @@ class MaterialTestCases(BaseTestCase):
         MaterialStockFactory(store=store, material=material2)
         self.materials = [material1, material2]
 
-    def test_get_products(self):
+    def test_get_materials(self):
         """Verify the serialized format"""
-        # percentage_of_capacity = decimal (XX.XX)
         response = self.client.get(
             '/api/v1/material/',
             HTTP_AUTHORIZATION=self.formatted_token
@@ -30,10 +30,19 @@ class MaterialTestCases(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Get expected results
-        expected_params = MaterialSerializer(
-            instance=self.materials,
-            many=True
-        ).data
+        expected_params = self._get_expected_params(self.materials, many=True)
 
         # Verify serialized content
         self.assertEqual(response.json(), expected_params)
+
+    def _get_expected_params(self, objects, many=False):
+        """Get expected results"""
+        if many:
+            expected_params = []
+            for obj in objects:
+                expected_params.append(
+                    get_model_obj_property(Material, obj)
+                )
+            return expected_params
+
+        return get_model_obj_property(Material, obj)

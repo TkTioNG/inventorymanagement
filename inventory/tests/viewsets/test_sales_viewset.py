@@ -2,7 +2,6 @@ from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
 from inventory.models import MaterialStock
-from inventory.serializers import SalesSerializer
 
 
 class SalesTestCases(BaseTestCase):
@@ -83,11 +82,8 @@ class SalesTestCases(BaseTestCase):
         # Verify access allow
         self.assertEqual(response.status_code, 200)
 
-        # Get expected data
-        expected_params = SalesSerializer(self.store).data
-
         # Verify the sales content
-        self.assertEqual(response.json(), expected_params)
+        self.assertEqual(response.json(), self.data)
 
         material_stock = MaterialStock.objects.last()
 

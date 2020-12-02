@@ -269,5 +269,4 @@ class TokenAuthorizationTestCases(APITestCase):
         new_ms_obj = get_model_obj_property(MaterialStock, ms_obj)
         new_ms_obj["store"] = new_ms_obj["store"].pk
         new_ms_obj["material"] = new_ms_obj["material"].pk
-        del new_ms_obj["pk"]
         return new_ms_obj

@@ -1,7 +1,8 @@
 from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, ProductFactory
-from inventory.serializers import ProductSerializer
+from inventory.models import Product
+from inventory.utils import get_model_obj_property
 
 
 class ProductTestCases(BaseTestCase):
@@ -26,10 +27,27 @@ class ProductTestCases(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Get expected results
-        expected_params = ProductSerializer(
-            instance=self.products,
-            many=True
-        ).data
+        expected_params = self._get_expected_params(self.products, many=True)
 
         # Verify serialized content
         self.assertEqual(response.json(), expected_params)
+
+    def _get_expected_params(self, objects, many=False):
+        """Get expected results"""
+        if many:
+            expected_params = []
+            for obj in objects:
+                expected_params.append(self._get_expected_obj(obj))
+            return expected_params
+
+        expected_params = self._get_expected_obj(objects)
+        return expected_params
+
+    def _get_expected_obj(self, obj):
+        """Change foreign key from model obj to pk"""
+        materials = obj.materials.all()
+        expected_obj = get_model_obj_property(Product, obj)
+        expected_obj["materials"] = [
+            material.pk for material in materials
+        ]
+        return expected_obj

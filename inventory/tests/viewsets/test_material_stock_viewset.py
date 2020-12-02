@@ -2,7 +2,7 @@ from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
 from inventory.models import MaterialStock
-from inventory.serializers import MaterialStockSerializer
+from inventory.utils import get_model_obj_property
 
 
 class MaterialStockTestCases(BaseTestCase):
@@ -49,10 +49,7 @@ class MaterialStockTestCases(BaseTestCase):
         ms_objects = MaterialStock.objects.all()
 
         # Get expected results
-        expected_params = MaterialStockSerializer(
-            instance=ms_objects,
-            many=True
-        ).data
+        expected_params = self._get_expected_params(ms_objects, many=True)
 
         # Verify the material stock content and the current capacity is remained unchanged
         self.assertEqual(response.json(), expected_params)
@@ -77,7 +74,7 @@ class MaterialStockTestCases(BaseTestCase):
         updated_object = MaterialStock.objects.last()
 
         # Get expected results
-        expected_params = MaterialStockSerializer(instance=updated_object).data
+        expected_params = self._get_expected_params(updated_object)
 
         # Verify response content
         self.assertEqual(response.json(), expected_params)
@@ -97,3 +94,21 @@ class MaterialStockTestCases(BaseTestCase):
 
         # Verify operation denial
         self.assertEqual(response.status_code, 400)
+
+    def _get_expected_params(self, ms_objects, many=False):
+        """Get expected results"""
+        if many:
+            expected_params = []
+            for ms_obj in ms_objects:
+                expected_params.append(self._get_expected_ms_obj(ms_obj))
+            return expected_params
+
+        expected_params = self._get_expected_ms_obj(ms_objects)
+        return expected_params
+
+    def _get_expected_ms_obj(self, ms_obj):
+        """Change foreign key from model obj to pk"""
+        expected_ms_obj = get_model_obj_property(MaterialStock, ms_obj)
+        expected_ms_obj["material"] = expected_ms_obj["material"].pk
+        expected_ms_obj["store"] = expected_ms_obj["store"].pk
+        return expected_ms_obj
