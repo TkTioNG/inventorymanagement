@@ -16,25 +16,41 @@ class ProductCapacityTestCases(BaseTestCase):
         product2 = ProductFactory()
         # create Store
         self.store = StoreFactory.create(
-            user=self.user, products=(product1, product2))
+            user=self.user,
+            products=(product1, product2)
+        )
         # Create material
         ms1 = MaterialStockFactory(store=self.store, current_capacity=30)
         ms2 = MaterialStockFactory(store=self.store, current_capacity=40)
         ms3 = MaterialStockFactory(store=self.store, current_capacity=50)
         # Link material with product
         MaterialQuantityFactory(
-            quantity=6, product=product1, ingredient=ms1.material)
+            quantity=6,
+            product=product1,
+            ingredient=ms1.material
+        )
         MaterialQuantityFactory(
-            quantity=7, product=product1, ingredient=ms2.material)
+            quantity=7,
+            product=product1,
+            ingredient=ms2.material
+        )
         MaterialQuantityFactory(
-            quantity=5, product=product2, ingredient=ms2.material)
+            quantity=5,
+            product=product2,
+            ingredient=ms2.material
+        )
         MaterialQuantityFactory(
-            quantity=10, product=product2, ingredient=ms3.material)
+            quantity=10,
+            product=product2,
+            ingredient=ms3.material
+        )
 
     def test_get_product_capacity(self):
         """Verify the format and the remaining capacity for each products in the store"""
-        response = self.client.get('/api/v1/product-capacity/',
-                                   HTTP_AUTHORIZATION=self.formatted_token)
+        response = self.client.get(
+            '/api/v1/product-capacity/',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify access allow
         self.assertEqual(response.status_code, 200)

@@ -18,18 +18,31 @@ class SalesTestCases(BaseTestCase):
         product3 = ProductFactory()
         # create Store
         self.store = StoreFactory.create(
-            user=self.user, products=(product1, product2, product3,))
+            user=self.user,
+            products=(product1, product2, product3,)
+        )
         # Create material
         material_stock = MaterialStockFactory(
-            store=self.store, current_capacity=100)
+            store=self.store,
+            current_capacity=100
+        )
 
         # Link material with products
         MaterialQuantityFactory(
-            product=product1, ingredient=material_stock.material, quantity=10)
+            product=product1,
+            ingredient=material_stock.material,
+            quantity=10
+        )
         MaterialQuantityFactory(
-            product=product2, ingredient=material_stock.material, quantity=10)
+            product=product2,
+            ingredient=material_stock.material,
+            quantity=10
+        )
         MaterialQuantityFactory(
-            product=product3, ingredient=material_stock.material, quantity=10)
+            product=product3,
+            ingredient=material_stock.material,
+            quantity=10
+        )
 
         self.data = {
             "sale":
@@ -60,8 +73,12 @@ class SalesTestCases(BaseTestCase):
 
     def test_sold_product_valid(self):
         """Verify selling of product without running out of material"""
-        response = self.client.post('/api/v1/sales/', data=self.data, format='json',
-                                    HTTP_AUTHORIZATION=self.formatted_token)
+        response = self.client.post(
+            '/api/v1/sales/',
+            data=self.data,
+            format='json',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify access allow
         self.assertEqual(response.status_code, 200)
@@ -75,13 +92,17 @@ class SalesTestCases(BaseTestCase):
         material_stock = MaterialStock.objects.last()
 
         # Verify the current capacity of the ingredient is updated correctly
-        self.assertEqual(material_stock.current_capacity,
-                         40)  # 100 - 10 - 20 - 30
+        # remaining capacity: 100 - 10 - 20 - 30 = 40
+        self.assertEqual(material_stock.current_capacity, 40)
 
     def test_sold_product_out_of_material(self):
         """Verify do not sell product than ran out of material"""
-        response = self.client.post('/api/v1/sales/', data=self.invalid_data,
-                                    format='json', HTTP_AUTHORIZATION=self.formatted_token)
+        response = self.client.post(
+            '/api/v1/sales/',
+            data=self.invalid_data,
+            format='json',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify operation denial
         self.assertEqual(response.status_code, 400)

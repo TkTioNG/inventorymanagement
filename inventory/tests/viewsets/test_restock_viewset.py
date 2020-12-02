@@ -15,12 +15,18 @@ class RestockViewSetTestCases(BaseTestCase):
         super().setUp()
         store = StoreFactory(user=self.user)
         self.data = MaterialStockFactory.create_batch(
-            3, store=store, current_capacity=10, max_capacity=100)
+            3,
+            store=store,
+            current_capacity=10,
+            max_capacity=100
+        )
 
     def test_get_restock(self):
         """Verify that the material stock and the total price are correctly serialized"""
-        response = self.client.get('/api/v1/restock/',
-                                   HTTP_AUTHORIZATION=self.formatted_token)
+        response = self.client.get(
+            '/api/v1/restock/',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Access allow
         self.assertEqual(response.status_code, 200)
@@ -41,7 +47,11 @@ class RestockViewSetTestCases(BaseTestCase):
         }
 
         response = self.client.post(
-            '/api/v1/restock/', data=post_data, format='json', HTTP_AUTHORIZATION=self.formatted_token)
+            '/api/v1/restock/',
+            data=post_data,
+            format='json',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify access
         self.assertEqual(response.status_code, 200)
@@ -72,7 +82,11 @@ class RestockViewSetTestCases(BaseTestCase):
         }
 
         response = self.client.post(
-            '/api/v1/restock/', data=post_data, format='json', HTTP_AUTHORIZATION=self.formatted_token)
+            '/api/v1/restock/',
+            data=post_data,
+            format='json',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify bad request
         self.assertEqual(response.status_code, 400)
@@ -86,7 +100,11 @@ class RestockViewSetTestCases(BaseTestCase):
         }
 
         response = self.client.post(
-            '/api/v1/restock/', data=post_data, format='json', HTTP_AUTHORIZATION=self.formatted_token)
+            '/api/v1/restock/',
+            data=post_data,
+            format='json',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify bad request
         self.assertEqual(response.status_code, 400)

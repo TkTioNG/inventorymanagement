@@ -16,7 +16,10 @@ class MaterialStockTestCases(BaseTestCase):
         store = StoreFactory.create(user=self.user)
         # Create material
         material_stock = MaterialStockFactory(
-            store=store, max_capacity=3000, current_capacity=100)
+            store=store,
+            max_capacity=3000,
+            current_capacity=100
+        )
         self.data = {
             "id": material_stock.id,
             "max_capacity": 5000,
@@ -35,7 +38,9 @@ class MaterialStockTestCases(BaseTestCase):
     def test_get_capacity(self):
         """Verify update of maximum capacity and inability to update current capacity"""
         response = self.client.get(
-            '/api/v1/material-stock/', HTTP_AUTHORIZATION=self.formatted_token)
+            '/api/v1/material-stock/',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify access allow
         self.assertEqual(response.status_code, 200)
@@ -45,7 +50,9 @@ class MaterialStockTestCases(BaseTestCase):
 
         # Get expected results
         expected_params = MaterialStockSerializer(
-            instance=ms_objects, many=True).data
+            instance=ms_objects,
+            many=True
+        ).data
 
         # Verify the material stock content and the current capacity is remained unchanged
         self.assertEqual(response.json(), expected_params)
@@ -53,8 +60,10 @@ class MaterialStockTestCases(BaseTestCase):
     def test_update_capacity(self):
         """Verify update of maximum capacity and inability to update current capacity"""
         response = self.client.put(
-            '/api/v1/material-stock/{}/'.format(self.data["id"]), data=self.data,
-            format='json', HTTP_AUTHORIZATION=self.formatted_token)
+            '/api/v1/material-stock/{}/'.format(self.data["id"]),
+            data=self.data,
+            format='json', HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify access allow
         self.assertEqual(response.status_code, 200)
@@ -79,8 +88,12 @@ class MaterialStockTestCases(BaseTestCase):
 
     def test_update_capacity_invalid(self):
         """Verify that do not updatewhen maximum capacity < current capacity"""
-        response = self.client.put('/api/v1/material-stock/{}/'.format(self.data["id"]), data=self.invalid_data,
-                                   format='json', HTTP_AUTHORIZATION=self.formatted_token)
+        response = self.client.put(
+            '/api/v1/material-stock/{}/'.format(self.data["id"]),
+            data=self.invalid_data,
+            format='json',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify operation denial
         self.assertEqual(response.status_code, 400)

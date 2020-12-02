@@ -17,15 +17,19 @@ class ProductTestCases(BaseTestCase):
     def test_get_products(self):
         """Verify the serialized format"""
         # percentage_of_capacity = decimal (XX.XX)
-        response = self.client.get('/api/v1/product/',
-                                   HTTP_AUTHORIZATION=self.formatted_token)
+        response = self.client.get(
+            '/api/v1/product/',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify access allowed
         self.assertEqual(response.status_code, 200)
 
         # Get expected results
         expected_params = ProductSerializer(
-            instance=self.products, many=True).data
+            instance=self.products,
+            many=True
+        ).data
 
         # Verify serialized content
         self.assertEqual(response.json(), expected_params)

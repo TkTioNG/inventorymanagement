@@ -13,13 +13,19 @@ class InventoryTestCases(BaseTestCase):
         super().setUp()
         store = StoreFactory(user=self.user)
         self.data = MaterialStockFactory.create_batch(
-            3, store=store, current_capacity=60, max_capacity=90)
+            3,
+            store=store,
+            current_capacity=60,
+            max_capacity=90
+        )
 
     def test_get_inventory(self):
         """Verify the serialized format and the percentage_of_capacity"""
         # percentage_of_capacity = decimal (XX.XX)
-        response = self.client.get('/api/v1/inventory/',
-                                   HTTP_AUTHORIZATION=self.formatted_token)
+        response = self.client.get(
+            '/api/v1/inventory/',
+            HTTP_AUTHORIZATION=self.formatted_token
+        )
 
         # Verify access allowed
         self.assertEqual(response.status_code, 200)

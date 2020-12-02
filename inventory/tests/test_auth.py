@@ -19,15 +19,23 @@ class TokenAuthorizationTestCases(APITestCase):
 
         self.store = StoreFactory(user=self.user)
         self.material_stock = MaterialStockFactory.create_batch(
-            3, store=self.store, max_capacity=2000, current_capacity=1000)
+            3,
+            store=self.store,
+            max_capacity=2000,
+            current_capacity=1000
+        )
         self.data = self._get_formatted_data(self.material_stock)
         self.post_data = self._get_formatted_data(
-            self.material_stock, quantity=50)
+            self.material_stock,
+            quantity=50
+        )
 
     def test_get_with_auth(self):
         """GET restock endpoint with token authorization"""
         response = self.client.get(
-            '/api/v1/restock/', HTTP_AUTHORIZATION='Token {}'.format(self.token))
+            '/api/v1/restock/',
+            HTTP_AUTHORIZATION='Token {}'.format(self.token)
+        )
 
         # Access allow
         self.assertEqual(response.status_code, 200)
@@ -44,7 +52,9 @@ class TokenAuthorizationTestCases(APITestCase):
     def test_get_with_wrong_auth(self):
         """GET restock endpoint with wrong token authorization"""
         response = self.client.get(
-            '/api/v1/restock/', HTTP_AUTHORIZATION='Token {}'.format(Faker().pyint()))
+            '/api/v1/restock/',
+            HTTP_AUTHORIZATION='Token {}'.format(Faker().pyint())
+        )
 
         # Verify access denied
         self.assertEqual(response.status_code, 401)
@@ -52,7 +62,11 @@ class TokenAuthorizationTestCases(APITestCase):
     def test_post_with_auth(self):
         """POST restock endpoint with token authorization"""
         response = self.client.post(
-            '/api/v1/restock/', data=self.post_data, format='json', HTTP_AUTHORIZATION='Token {}'.format(self.token))
+            '/api/v1/restock/',
+            data=self.post_data,
+            format='json',
+            HTTP_AUTHORIZATION='Token {}'.format(self.token)
+        )
 
         # Verify access
         self.assertEqual(response.status_code, 200)
@@ -74,7 +88,10 @@ class TokenAuthorizationTestCases(APITestCase):
     def test_post_without_auth(self):
         """POST restock endpoint without token authorization"""
         response = self.client.post(
-            '/api/v1/restock/', data=self.post_data, format='json')
+            '/api/v1/restock/',
+            data=self.post_data,
+            format='json'
+        )
 
         # Verify access denial
         self.assertEqual(response.status_code, 401)
@@ -82,7 +99,11 @@ class TokenAuthorizationTestCases(APITestCase):
     def test_post_with_wrong_auth(self):
         """POST restock endpoint with wrong token authorization"""
         response = self.client.post(
-            '/api/v1/restock/', data=self.post_data, format='json', HTTP_AUTHORIZATION='Token {}'.format(Faker().pyint()))
+            '/api/v1/restock/',
+            data=self.post_data,
+            format='json',
+            HTTP_AUTHORIZATION='Token {}'.format(Faker().pyint())
+        )
 
         # Verify access denial
         self.assertEqual(response.status_code, 401)
@@ -101,8 +122,12 @@ class TokenAuthorizationTestCases(APITestCase):
             "max_capacity": 4999,
         }
 
-        response = self.client.put('/api/v1/material-stock/{}/'.format(ms_obj.id), data=updated_data,
-                                   format='json', HTTP_AUTHORIZATION='Token {}'.format(self.token))
+        response = self.client.put(
+            '/api/v1/material-stock/{}/'.format(ms_obj.id),
+            data=updated_data,
+            format='json',
+            HTTP_AUTHORIZATION='Token {}'.format(self.token)
+        )
 
         # Verify access
         self.assertEqual(response.status_code, 200)
@@ -129,7 +154,10 @@ class TokenAuthorizationTestCases(APITestCase):
         }
 
         response = self.client.put(
-            '/api/v1/material-stock/{}/'.format(ms_obj.id), data=updated_data, format='json')
+            '/api/v1/material-stock/{}/'.format(ms_obj.id),
+            data=updated_data,
+            format='json'
+        )
 
         # Verify access
         self.assertEqual(response.status_code, 401)
@@ -148,7 +176,11 @@ class TokenAuthorizationTestCases(APITestCase):
         }
 
         response = self.client.put(
-            '/api/v1/material-stock/{}/'.format(ms_obj.id), data=updated_data, format='json', HTTP_AUTHORIZATION='Token {}'.format(Faker().pyint()))
+            '/api/v1/material-stock/{}/'.format(ms_obj.id),
+            data=updated_data,
+            format='json',
+            HTTP_AUTHORIZATION='Token {}'.format(Faker().pyint())
+        )
 
         # Verify access
         self.assertEqual(response.status_code, 401)
@@ -158,8 +190,10 @@ class TokenAuthorizationTestCases(APITestCase):
 
         ms_obj = self._get_material_stock()
 
-        response = self.client.delete('/api/v1/material-stock/{}/'.format(
-            ms_obj.id), HTTP_AUTHORIZATION='Token {}'.format(self.token))
+        response = self.client.delete(
+            '/api/v1/material-stock/{}/'.format(ms_obj.id),
+            HTTP_AUTHORIZATION='Token {}'.format(self.token)
+        )
 
         # Verify access
         self.assertEqual(response.status_code, 204)
@@ -176,7 +210,8 @@ class TokenAuthorizationTestCases(APITestCase):
         ms_obj = self._get_material_stock()
 
         response = self.client.delete(
-            '/api/v1/material-stock/{}/'.format(ms_obj.id))
+            '/api/v1/material-stock/{}/'.format(ms_obj.id)
+        )
 
         # Verify access denial
         self.assertEqual(response.status_code, 401)
@@ -192,8 +227,10 @@ class TokenAuthorizationTestCases(APITestCase):
 
         ms_obj = self._get_material_stock()
 
-        response = self.client.delete('/api/v1/material-stock/{}/'.format(
-            ms_obj.id), HTTP_AUTHORIZATION='Token {}'.format(Faker().pyint()))
+        response = self.client.delete(
+            '/api/v1/material-stock/{}/'.format(ms_obj.id),
+            HTTP_AUTHORIZATION='Token {}'.format(Faker().pyint())
+        )
 
         # Verify access denial
         self.assertEqual(response.status_code, 401)

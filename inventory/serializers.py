@@ -56,7 +56,8 @@ class RestockSerializer(serializers.ModelSerializer):
         if instance.current_capacity + self.initial_data.get('quantity') > instance.max_capacity \
                 or self.initial_data.get('quantity') < 0:
             raise ValidationError(
-                detail="Current capacity cannot be greater than max capacity or negative value")
+                detail="Current capacity cannot be greater than max capacity or negative value"
+            )
 
         instance.current_capacity = instance.current_capacity + \
             self.initial_data.get('quantity')
@@ -88,15 +89,18 @@ class ProductCapacitySerializer(serializers.ModelSerializer):
         data = []
         for product in obj.products.all():
             material_quantities_need = MaterialQuantity.objects.filter(
-                product=product)
+                product=product
+            )
             material_quantity_list = []
             for material_quantity in material_quantities_need:
                 quantity_needed = material_quantity.quantity
                 material_stock = obj.material_stocks.get(
-                    material=material_quantity.ingredient)
+                    material=material_quantity.ingredient
+                )
                 current_quantity = material_stock.current_capacity
                 material_quantity_list.append(
-                    int(current_quantity / quantity_needed))
+                    int(current_quantity / quantity_needed)
+                )
             data.append({
                 'product': product.product_id,
                 'quantity': min(material_quantity_list, default=0),
@@ -117,15 +121,18 @@ class SalesSerializer(serializers.Serializer):
         data = []
         for product in obj.products.all():
             material_quantities_need = MaterialQuantity.objects.filter(
-                product=product)
+                product=product
+            )
             material_quantity_list = []
             for material_quantity in material_quantities_need:
                 quantity_needed = material_quantity.quantity
                 material_stock = obj.material_stocks.get(
-                    material=material_quantity.ingredient)
+                    material=material_quantity.ingredient
+                )
                 current_quantity = material_stock.current_capacity
                 material_quantity_list.append(
-                    int(current_quantity / quantity_needed))
+                    int(current_quantity / quantity_needed)
+                )
             data.append({
                 'product': product.product_id,
                 'quantity': min(material_quantity_list, default=0),
@@ -146,16 +153,25 @@ class SalesSerializer(serializers.Serializer):
                     sold_quantity = product_sold.get('quantity')
                     if not isinstance(sold_quantity, int) or sold_quantity < 0:
                         raise ValidationError(
-                            detail="Sold quantity should be valid integer")
+                            detail="Sold quantity should be valid integer"
+                        )
                     material_quantities_need = MaterialQuantity.objects.filter(
-                        product=product_sold.get('product'))
+                        product=product_sold.get('product')
+                    )
                     for material_quantity in material_quantities_need:
                         material_quantity_needed = material_quantity.quantity
                         material_stock_obj = self.instance.material_stocks.get(
-                            material=material_quantity.ingredient)
+                            material=material_quantity.ingredient
+                        )
+
                         if (material_stock_obj.current_capacity < material_quantity_needed * sold_quantity):
-                            raise ValidationError(detail="Ingredient - {0} is not enough for product - {1}".format(
-                                material_quantity.ingredient, material_quantity.product))
+                            raise ValidationError(
+                                detail="Ingredient - {0} is not enough for product - {1}"
+                                .format(
+                                    material_quantity.ingredient,
+                                    material_quantity.product
+                                )
+                            )
 
                 self._validated_data = self.initial_data
             except ValidationError as exc:
@@ -175,11 +191,13 @@ class SalesSerializer(serializers.Serializer):
         for product_sold in sale:
             sold_quantity = product_sold.get('quantity')
             material_quantities_need = MaterialQuantity.objects.filter(
-                product=product_sold.get('product'))
+                product=product_sold.get('product')
+            )
             for material_quantity in material_quantities_need:
                 material_quantity_needed = material_quantity.quantity
                 material_stock_obj = self.instance.material_stocks.get(
-                    material=material_quantity.ingredient)
+                    material=material_quantity.ingredient
+                )
                 material_stock_obj.current_capacity = material_stock_obj.current_capacity - \
                     material_quantity_needed * sold_quantity
                 material_stock_obj.save()

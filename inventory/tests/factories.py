@@ -32,8 +32,13 @@ class StoreFactory(factory.django.DjangoModelFactory):
 
 
 class MaterialFactory(factory.django.DjangoModelFactory):
-    price = factory.Faker('pydecimal', right_digits=2,
-                          positive=True, min_value=10, max_value=999999)
+    price = factory.Faker(
+        'pydecimal',
+        right_digits=2,
+        positive=True,
+        min_value=10,
+        max_value=999999
+    )
     name = factory.Faker('name')
 
     class Meta:

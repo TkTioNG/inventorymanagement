@@ -47,6 +47,7 @@ class MaterialStockViewSet(viewsets.ModelViewSet):
                 detail="max_capacity cannot be smaller than current_capacity")
         if 'current_capacity' in data:
             del data['current_capacity']
+
         serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -88,7 +89,10 @@ class RestockViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.Ge
         for material in materials:
             instance = self.get_queryset().get(material=material.get('material'))
             serializer = self.get_serializer(
-                instance=instance, data=material, partial=True)
+                instance=instance,
+                data=material,
+                partial=True
+            )
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
         return self.list(request, *args, **kwargs)
@@ -140,7 +144,9 @@ class SalesViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.Gene
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
-            data=request.data, instance=self.get_queryset())
+            data=request.data,
+            instance=self.get_queryset()
+        )
 
         serializer.is_valid(raise_exception=True)
 
