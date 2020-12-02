@@ -18,17 +18,21 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Material',
             fields=[
-                ('material_id', models.AutoField(primary_key=True, serialize=False)),
-                ('price', models.DecimalField(decimal_places=2, default=0.0, max_digits=10)),
+                ('material_id', models.AutoField(
+                    primary_key=True, serialize=False)),
+                ('price', models.DecimalField(
+                    decimal_places=2, default=0.0, max_digits=10)),
                 ('name', models.CharField(max_length=100, unique=True)),
             ],
         ),
         migrations.CreateModel(
             name='MaterialQuantity',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('quantity', models.IntegerField()),
-                ('ingredient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='inventory.material')),
+                ('ingredient', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='inventory.material')),
             ],
             options={
                 'verbose_name_plural': 'Material Quantities',
@@ -39,7 +43,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('product_id', models.AutoField(primary_key=True, serialize=False)),
                 ('name', models.CharField(max_length=100, unique=True)),
-                ('materials', models.ManyToManyField(related_name='products', through='inventory.MaterialQuantity', to='inventory.Material')),
+                ('materials', models.ManyToManyField(related_name='products',
+                                                     through='inventory.MaterialQuantity', to='inventory.Material')),
             ],
         ),
         migrations.CreateModel(
@@ -47,18 +52,23 @@ class Migration(migrations.Migration):
             fields=[
                 ('store_id', models.AutoField(primary_key=True, serialize=False)),
                 ('store_name', models.CharField(max_length=100, unique=True)),
-                ('products', models.ManyToManyField(blank=True, to='inventory.Product')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stores', to=settings.AUTH_USER_MODEL)),
+                ('products', models.ManyToManyField(blank=True,
+                                                    related_name='stores', to='inventory.Product')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                           related_name='stores', to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='MaterialStock',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('max_capacity', models.IntegerField(default=10000)),
                 ('current_capacity', models.IntegerField(default=0)),
-                ('material', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='material_stocks', to='inventory.material')),
-                ('store', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='material_stocks', to='inventory.store')),
+                ('material', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                               related_name='material_stocks', to='inventory.material')),
+                ('store', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                            related_name='material_stocks', to='inventory.store')),
             ],
             options={
                 'verbose_name_plural': 'Material Stocks',
@@ -67,26 +77,37 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='materialquantity',
             name='product',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='material_quantities', to='inventory.product'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='material_quantities', to='inventory.product'),
         ),
         migrations.AddConstraint(
             model_name='material',
-            constraint=models.CheckConstraint(check=models.Q(price__gte=0.0), name='price__gte_0'),
+            constraint=models.CheckConstraint(
+                check=models.Q(price__gte=0.0), name='price__gte_0'),
         ),
         migrations.AddConstraint(
             model_name='materialstock',
-            constraint=models.CheckConstraint(check=models.Q(max_capacity__gt=0), name='max_capacity__gt_0'),
+            constraint=models.CheckConstraint(check=models.Q(
+                max_capacity__gt=0), name='max_capacity__gt_0'),
         ),
         migrations.AddConstraint(
             model_name='materialstock',
-            constraint=models.CheckConstraint(check=models.Q(('current_capacity__gte', 0), ('current_capacity__lte', django.db.models.expressions.F('max_capacity'))), name='current_capacity_valid'),
+            constraint=models.CheckConstraint(check=models.Q(('current_capacity__gte', 0), (
+                'current_capacity__lte', django.db.models.expressions.F('max_capacity'))), name='current_capacity_valid'),
         ),
         migrations.AddConstraint(
             model_name='materialquantity',
-            constraint=models.CheckConstraint(check=models.Q(quantity__gt=0), name='quantity__gt_0'),
+            constraint=models.CheckConstraint(
+                check=models.Q(quantity__gt=0), name='quantity__gt_0'),
         ),
         migrations.AddConstraint(
             model_name='materialquantity',
-            constraint=models.UniqueConstraint(fields=('product', 'ingredient'), name='unique_product_ingredient'),
+            constraint=models.UniqueConstraint(
+                fields=('product', 'ingredient'), name='unique_product_ingredient'),
+        ),
+        migrations.AddConstraint(
+            model_name='materialstock',
+            constraint=models.UniqueConstraint(
+                fields=('store', 'material'), name='unique_store_material'),
         ),
     ]
