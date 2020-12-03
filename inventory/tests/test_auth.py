@@ -257,7 +257,7 @@ class TokenAuthorizationTestCases(APITestCase):
                 })
         return {
             "materials": materials_array,
-            "total_price": get_restock_total_price(ms_obj),
+            "total_price": get_restock_total_price(materials_array),
         }
 
     def _get_material_stock(self):

@@ -122,7 +122,7 @@ class RestockViewSetTestCases(BaseTestCase):
 
         expected_params = {
             "materials": materials,
-            "total_price": float(get_restock_total_price(objects))
+            "total_price": float(get_restock_total_price(materials))
         }
         return expected_params
 
