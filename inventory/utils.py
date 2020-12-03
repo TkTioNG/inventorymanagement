@@ -4,8 +4,9 @@ from inventory.models import Material, MaterialStock, MaterialQuantity
 def get_restock_total_price(materials):
     total_price = 0
     for material in materials:
-        price = Material.objects.get(pk=material.get('material')).price
-        total_price += price * material.get('quantity')
+        if "material" in material or "quantity" in material:
+            price = Material.objects.get(pk=material.get('material')).price
+            total_price += price * material.get('quantity')
 
     return round(total_price, 2)
 
