@@ -2,7 +2,6 @@ from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory
 from inventory.models import Material, MaterialStock
-from inventory.services.restock import get_restock_total_price
 
 
 class RestockViewSetTestCases(BaseTestCase):

@@ -2,7 +2,6 @@ from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
 from inventory.models import MaterialStock
-from inventory.services.product import get_product_remaining_capacities
 
 
 class SalesTestCases(BaseTestCase):

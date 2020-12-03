@@ -4,7 +4,6 @@ from rest_framework.authtoken.models import Token
 
 from inventory.models import Material, MaterialStock
 from inventory.tests.factories import UserFactory, StoreFactory, MaterialStockFactory
-from inventory.services.restock import get_restock_total_price
 from inventory.utils import get_model_obj_property
 
 
