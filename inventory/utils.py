@@ -1,4 +1,4 @@
-from inventory.models import Material, MaterialStock, MaterialQuantity
+from inventory.models import Material, MaterialStock, MaterialQuantity, Store
 
 
 def get_restock_total_price(materials):
@@ -22,6 +22,8 @@ def get_model_obj_property(model, instance, exclude=("pk")):
 
 def get_product_remaining_capacities(obj):
     data = []
+    if not isinstance(obj, Store):
+        return data
     for product in obj.products.all():
         material_quantities_need = MaterialQuantity.objects.filter(
             product=product
