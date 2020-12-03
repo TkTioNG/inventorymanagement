@@ -12,7 +12,7 @@ from inventory.serializers import (
     MaterialQuantitySerializer, ProductSerializer, RestockSerializer,
     InventorySerializer, ProductCapacitySerializer, SalesSerializer
 )
-from inventory.utils import get_restock_total_price
+from inventory.services.restock import get_restock_total_price
 
 
 class UserViewSet(viewsets.ModelViewSet):

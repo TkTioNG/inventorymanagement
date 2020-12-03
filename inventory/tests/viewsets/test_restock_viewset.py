@@ -1,8 +1,8 @@
 from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory
-from inventory.models import MaterialStock
-from inventory.utils import get_restock_total_price
+from inventory.models import Material, MaterialStock
+from inventory.services.restock import get_restock_total_price
 
 
 class RestockViewSetTestCases(BaseTestCase):
@@ -120,9 +120,20 @@ class RestockViewSetTestCases(BaseTestCase):
         for obj in objects:
             materials.append(self._get_expected_obj(obj))
 
+        total_price = 0
+        for material in materials:
+            if "material" in material or "quantity" in material:
+                try:
+                    price = Material.objects.get(
+                        pk=material.get('material')
+                    ).price
+                    total_price += price * material.get('quantity')
+                except Material.DoesNotExist:
+                    raise ValueError("material is not found.")
+
         expected_params = {
             "materials": materials,
-            "total_price": float(get_restock_total_price(materials))
+            "total_price": float(round(total_price, 2))
         }
         return expected_params
 

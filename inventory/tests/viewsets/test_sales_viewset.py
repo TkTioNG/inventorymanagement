@@ -2,7 +2,7 @@ from inventory.tests.viewsets.base import BaseTestCase
 
 from inventory.tests.factories import StoreFactory, MaterialStockFactory, ProductFactory, MaterialQuantityFactory
 from inventory.models import MaterialStock
-from inventory.utils import get_product_remaining_capacities
+from inventory.services.product import get_product_remaining_capacities
 
 
 class SalesTestCases(BaseTestCase):
@@ -45,8 +45,7 @@ class SalesTestCases(BaseTestCase):
         )
 
         self.data = {
-            "sale":
-            [
+            "sale": [
                 {
                     "product": product1.product_id,
                     "quantity": 1,
@@ -62,8 +61,7 @@ class SalesTestCases(BaseTestCase):
             ]
         }
         self.invalid_data = {
-            "sale":
-            [
+            "sale": [
                 {
                     "product": product1.product_id,
                     "quantity": 100,
@@ -107,5 +105,19 @@ class SalesTestCases(BaseTestCase):
     def _get_expected_params(self):
         """Get expected results"""
         return {
-            "sale": get_product_remaining_capacities(self.store)
+            # quantity = remaining product capacity, (100-10-20-30)/10 = 4
+            "sale": [
+                {
+                    "product": 1,
+                    "quantity": 4,
+                },
+                {
+                    "product": 2,
+                    "quantity": 4,
+                },
+                {
+                    "product": 3,
+                    "quantity": 4,
+                },
+            ]
         }

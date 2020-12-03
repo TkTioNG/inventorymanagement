@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 from inventory.models import Store, Material, MaterialStock, MaterialQuantity, Product
-from inventory.utils import get_product_remaining_capacities
+from inventory.services.product import get_product_remaining_capacities
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -124,7 +124,7 @@ class SalesSerializer(serializers.Serializer):
 
         # if sale is post, there must be products exist in the data
         sale = self.initial_data.get("sale")
-        if not hasattr(sale, "__len__") or len(sale) == 0:
+        if not bool(sale):
             raise ValidationError(
                 detail="No product is sold"
             )
@@ -157,9 +157,14 @@ class SalesSerializer(serializers.Serializer):
         # Check the sufficiency of the material, if not enough, raise error
         for material in materials_needed:
             material_quantity = material.quantity
-            material_stock_obj = self.instance.material_stocks.get(
-                material=material.ingredient
-            )
+            try:
+                material_stock_obj = self.instance.material_stocks.get(
+                    material=material.ingredient
+                )
+            except MaterialStock.DoesNotExist:
+                raise ValidationError(
+                    detail="Ingredient is not found in the store"
+                )
 
             if material_stock_obj.current_capacity < material_quantity * sold_quantity:
                 raise ValidationError(
@@ -181,11 +186,14 @@ class SalesSerializer(serializers.Serializer):
             )
             for material_quantity in material_quantities_need:
                 material_quantity_needed = material_quantity.quantity
+                # validatation is done before update
                 material_stock_obj = self.instance.material_stocks.get(
                     material=material_quantity.ingredient
                 )
-                material_stock_obj.current_capacity = material_stock_obj.current_capacity - \
-                    material_quantity_needed * sold_quantity
+                material_stock_obj.current_capacity = \
+                    material_stock_obj.current_capacity \
+                    - material_quantity_needed * sold_quantity
+
                 material_stock_obj.save()
 
         return self.instance

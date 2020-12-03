@@ -2,9 +2,10 @@ from faker import Faker
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
-from inventory.models import MaterialStock
+from inventory.models import Material, MaterialStock
 from inventory.tests.factories import UserFactory, StoreFactory, MaterialStockFactory
-from inventory.utils import get_restock_total_price, get_model_obj_property
+from inventory.services.restock import get_restock_total_price
+from inventory.utils import get_model_obj_property
 
 
 class TokenAuthorizationTestCases(APITestCase):
@@ -255,9 +256,21 @@ class TokenAuthorizationTestCases(APITestCase):
                     "material": ms.material.material_id,
                     "quantity": quantity
                 })
+
+        total_price = 0
+        for material in materials_array:
+            if "material" in material or "quantity" in material:
+                try:
+                    price = Material.objects.get(
+                        pk=material.get('material')
+                    ).price
+                    total_price += price * material.get('quantity')
+                except Material.DoesNotExist:
+                    raise ValueError("material is not found.")
+
         return {
             "materials": materials_array,
-            "total_price": get_restock_total_price(materials_array),
+            "total_price": round(total_price, 2),
         }
 
     def _get_material_stock(self):
