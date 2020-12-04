@@ -2,22 +2,22 @@ from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 
-from inventory import views
+from inventory import api
 
 router = DefaultRouter()
-router.register(r'store', views.StoreViewSet, 'store')
-router.register(r'user', views.UserViewSet, 'user')
-router.register(r'material', views.MaterialViewSet, 'material')
+router.register(r'store', api.StoreViewSet, 'store')
+router.register(r'user', api.UserViewSet, 'user')
+router.register(r'material', api.MaterialViewSet, 'material')
 router.register(r'material-stock',
-                views.MaterialStockViewSet, 'material-stock')
+                api.MaterialStockViewSet, 'material-stock')
 router.register(r'material-quantity',
-                views.MaterialQuantityViewSet, 'material-quantity')
-router.register(r'product', views.ProductViewSet, 'product')
-router.register(r'restock', views.RestockViewSet, 'restock')
-router.register(r'inventory', views.InventoryViewSet, 'inventory')
+                api.MaterialQuantityViewSet, 'material-quantity')
+router.register(r'product', api.ProductViewSet, 'product')
+router.register(r'restock', api.RestockViewSet, 'restock')
+router.register(r'inventory', api.InventoryViewSet, 'inventory')
 router.register(r'product-capacity',
-                views.ProductCapacityViewSet, 'product-capacity')
-router.register(r'sales', views.SalesViewSet, 'sales')
+                api.ProductCapacityViewSet, 'product-capacity')
+router.register(r'sales', api.SalesViewSet, 'sales')
 
 urlpatterns = [
     path('', include(router.urls)),
