@@ -20,5 +20,6 @@ router.register(r'product-capacity',
 router.register(r'sales', api.SalesViewSet, 'sales')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('api/v1/', include(router.urls)),
+    path('', )
 ]
