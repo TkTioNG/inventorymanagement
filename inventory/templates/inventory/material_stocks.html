@@ -1,0 +1,33 @@
+{% extends "base.html" %} 
+
+{% block content %} 
+
+<h3>Material Stock List</h3>
+
+{% if material_stocks %}
+<table class="table table-striped">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Material ID</th>
+      <th scope="col">Max Capacity</th>
+      <th scope="col">Current Capacity</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for material_stock in material_stocks %}
+    <tr>
+      <th scope="row">{{material_stock.id}}</th>
+      <td>{{material_stock.material}}</td>
+      <td>{{material_stock.max_capacity}}</td>
+      <td>{{material_stock.current_capacity}}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+  <p>No polls are available.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %} 
+
+{% block content %} 
+
+<h3>Product Capacity</h3>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">
+    Below are the remaining capacities of each product 
+    that can be produced before run out of material
+    </li>
+  </ol>
+</nav>
+
+{% if remaining_capacities %}
+<table class="table table-striped">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Product Name</th>
+      <th scope="col">Quantity</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for remaining_capacity in remaining_capacities %}
+    <tr>
+      <th scope="row">{{ remaining_capacity.product }}</th>
+      <td>{{ remaining_capacity.product }}</td>
+      <td>{{ remaining_capacity.quantity }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+  <p>No details are available.</p>
+{% endif %}
+
+{% endblock %}

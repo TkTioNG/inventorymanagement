@@ -1,0 +1,46 @@
+{% extends "base.html" %} 
+
+{% block content %} 
+
+<h3>Restock</h3>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">
+    Below shows the quantity needed to be fully restock  
+    for each product and the total price to restock them.
+    </li>
+  </ol>
+</nav>
+
+{% if materials %}
+<table class="table table-striped">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Material Name</th>
+      <th scope="col">Quantity</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for material in materials %}
+    <tr>
+      <th scope="row">{{ material.material }}</th>
+      <td>{{ material.material }}</td>
+      <td>{{ material.quantity }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if total_price %}
+<div class="alert alert-dark" role="alert">
+  Total restock price: <a href="#" class="alert-link">RM {{ total_price|floatformat:2 }}</a>
+</div>
+{% endif %}
+
+{% else %}
+  <p>No details are available.</p>
+{% endif %}
+
+{% endblock %}
