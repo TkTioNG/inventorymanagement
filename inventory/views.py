@@ -1,5 +1,6 @@
 from django.shortcuts import render
 import requests
+import json
 
 
 HEADERS = {
@@ -85,13 +86,13 @@ def productCapacity(request):
 
 def sales(request):
     req = requests.get(
-        'http://localhost:8000/api/v1/restock/',
+        'http://localhost:8000/api/v1/product/',
         headers=HEADERS
     )
-    print(req.json())
-    data_json = req.json()
+    data = json.dumps(req.json())
+    print(data)
+    print(type(data))
     context = {
-        'materials': data_json.get('materials', []),
-        'total_price': data_json.get('total_price', 0.00)
+        'products': req.json(),
     }
     return render(request, 'inventory/sales.html', context)

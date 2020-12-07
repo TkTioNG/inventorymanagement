@@ -7,11 +7,13 @@
 <h3>Sales details</h3>
 
 <link rel="stylesheet" href="{% static 'css/sales.css' %}" />
+
 <script src="{% static 'js/sales.js' %}"></script>
 
 <table class="table table-hover sales-list">
   <colgroup>
-    <col class="w-75">
+    <col class="w-50">
+    <col class="w-25">
     <col class="w-25">
   </colgroup>
   <thead>
@@ -23,27 +25,25 @@
   </thead>
   <tbody>
     <tr>
-      <td>
-        <select class="form-control">
-          <option selected>Choose...</option>
-          <option value="1">One</option>
-          <option value="2">Two</option>
-          <option value="3">Three</option>
-      </select>
-      </td>
-      <td>
-        <input type="number" class="form-control" value="0" name="quantity" />
-      </td>
-      <td>
-        <button class="btnDel btn btn-danger">
-          <i class="fa fa-times"></i>
-        </button>
-      </td>
     </tr>
   </tbody>
   <tfoot>
     <tr>
-      <td colspan="3">
+      <td>
+        <select class="form-control" id="add_product">
+        {% if products %}
+        {% for product in products %}
+          <option value={{ product.product_id }}>{{ product.name }}</option>
+        {% endfor %}
+        {% else %}
+          <option value="0">No available option</option>
+        {% endif %}   
+        </select>
+      </td>
+      <td>
+        <input type="number" class="form-control" value="0"  id="add_quantity" />
+      </td>
+      <td>
         <input type="button" class="btn btn-primary btn-block " id="addrow" value="Add Row" />
       </td>
     </tr>

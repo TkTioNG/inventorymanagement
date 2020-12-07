@@ -1,23 +1,35 @@
 $(document).ready(function () {
-  var counter = 1;
+  var counter = 0;
 
-  $("#addrow").on("click", function () {
+  $("#addrow").on("click", function (e) {
     var newRow = $("<tr>");
     var cols = "";
 
+    var product = $("#add_product").val();
+    var quantity = $("#add_quantity").val();
+
     cols +=
-      '<td><input type="text" class="form-control" name="name' +
+      '<td><input type="text" class="form-control" value="' +
+      product +
+      '" name="product' +
       counter +
-      '"/></td>';
+      '" />' +
+      "</td>";
+
     cols +=
-      '<td><input type="number" class="form-control" value="0" name="quantity' +
+      '<td><input type="number" class="form-control" value="' +
+      quantity +
+      '" name="quantity' +
       counter +
       '"/></td>';
 
     cols +=
       '<td><button class="btnDel btn btn-danger"><i class="fa fa-times"></i></button></td>';
+
     newRow.append(cols);
+
     $("table.sales-list").append(newRow);
+
     counter++;
   });
 
