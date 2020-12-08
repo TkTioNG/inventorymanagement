@@ -44,8 +44,7 @@ class SalesTestCases(BaseTestCase):
         )
 
         self.data = {
-            "sale":
-            [
+            "sale": [
                 {
                     "product": product1.product_id,
                     "quantity": 1,
@@ -61,8 +60,7 @@ class SalesTestCases(BaseTestCase):
             ]
         }
         self.invalid_data = {
-            "sale":
-            [
+            "sale": [
                 {
                     "product": product1.product_id,
                     "quantity": 100,
@@ -83,7 +81,7 @@ class SalesTestCases(BaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Verify the sales content
-        self.assertEqual(response.json(), self.data)
+        self.assertEqual(response.json(), self._get_expected_params())
 
         material_stock = MaterialStock.objects.last()
 
@@ -102,3 +100,23 @@ class SalesTestCases(BaseTestCase):
 
         # Verify operation denial
         self.assertEqual(response.status_code, 400)
+
+    def _get_expected_params(self):
+        """Get expected results"""
+        return {
+            # quantity = remaining product capacity, (100-10-20-30)/10 = 4
+            "sale": [
+                {
+                    "product": 1,
+                    "quantity": 4,
+                },
+                {
+                    "product": 2,
+                    "quantity": 4,
+                },
+                {
+                    "product": 3,
+                    "quantity": 4,
+                },
+            ]
+        }

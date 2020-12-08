@@ -1,0 +1,102 @@
+{% extends "base.html" %} 
+
+{% block content %} 
+<div class="row">
+  <div class="col-3">
+    <div class="nav flex-column nav-pills" id="nav-tab" role="tablist">
+      <a class="nav-link active" id="nav-products-tab" data-toggle="tab" href="#nav-products" role="tab" aria-controls="nav-products" aria-selected="true">Products</a>
+      <a class="nav-link" id="nav-materials-tab" data-toggle="tab" href="#nav-materials" role="tab" aria-controls="nav-materials" aria-selected="false">Materials</a>
+      <a class="nav-link" id="nav-material-stocks-tab" data-toggle="tab" href="#nav-material-stocks" role="tab" aria-controls="nav-material-stocks" aria-selected="false">Material Stocks</a>
+      <a class="nav-link" id="nav-restock-tab" data-toggle="tab" href="#nav-restock" role="tab" aria-controls="nav-restock" aria-selected="false">Restock</a>
+      <a class="nav-link" id="nav-inventory-tab" data-toggle="tab" href="#nav-inventory" role="tab" aria-controls="nav-inventory" aria-selected="false">Inventory</a>
+      <a class="nav-link" id="nav-product-capacity-tab" data-toggle="tab" href="#nav-product-capacity" role="tab" aria-controls="nav-product-capacity" aria-selected="false">Product Capacity</a>
+      <a class="nav-link" id="nav-sales-tab" data-toggle="tab" href="#nav-sales" role="tab" aria-controls="nav-sales" aria-selected="false">Sales</a>
+    </div>
+  </div>
+  <div class="col-9">
+    <div class="tab-content" id="nav-tabContent">
+      <div class="tab-pane fade show active" id="nav-products" role="tabpanel" aria-labelledby="nav-products-tab">
+        <h3>Product List</h3>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">
+            List all the products available in the store.
+            </li>
+          </ol>
+        </nav>
+        <a href="{% url 'products' %}" class="btn btn-info btn-lg btn-block" role="button">Go to Products</a>
+      </div>
+      <div class="tab-pane fade" id="nav-materials" role="tabpanel" aria-labelledby="nav-materials-tab">
+        <h3>Material List</h3>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">
+            List all the material available in the store.
+            </li>
+          </ol>
+        </nav>
+        <a href="{% url 'materials' %}" class="btn btn-info btn-lg btn-block" role="button">Go to Materials</a>
+      </div>
+      <div class="tab-pane fade" id="nav-material-stocks" role="tabpanel" aria-labelledby="nav-material-stocks-tab">
+        <h3>Material Stock List</h3>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">
+            List the stock value for each materials in the store.
+            </li>
+          </ol>
+        </nav>
+        <a href="{% url 'material-stock' %}" class="btn btn-info btn-lg btn-block" role="button">Go to Material Stock</a>
+      </div>
+      <div class="tab-pane fade" id="nav-restock" role="tabpanel" aria-labelledby="nav-restock-tab">
+        <h3>Restock</h3>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">
+            List the quantity needed to be fully restock  
+            for each material and the total price to restock them
+            and provide form to restock the material.
+            </li>
+          </ol>
+        </nav>
+        <a href="{% url 'restock' %}" class="btn btn-info btn-lg btn-block" role="button">Go to Restock</a>
+      </div>
+      <div class="tab-pane fade" id="nav-inventory" role="tabpanel" aria-labelledby="nav-inventory-tab">
+        <h3>Inventory</h3>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">
+            List the inventory details for each product in the store.
+            </li>
+          </ol>
+        </nav>
+        <a href="{% url 'inventory' %}" class="btn btn-info btn-lg btn-block" role="button">Go to Inventory</a>
+      </div>
+      <div class="tab-pane fade" id="nav-product-capacity" role="tabpanel" aria-labelledby="nav-product-capacity-tab">
+        <h3>Product Capacity</h3>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">
+            Show the remaining capacities of each product 
+            that can be produced before run out of material
+            </li>
+          </ol>
+        </nav>
+        <a href="{% url 'product-capacity' %}" class="btn btn-info btn-lg btn-block" role="button">Go to Product Capacity</a>
+      </div>
+      <div class="tab-pane fade" id="nav-sales" role="tabpanel" aria-labelledby="nav-sales-tab">
+        <h3>Sales details</h3>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">
+            Provide form to let the user enter the sold quantity for the each product.
+            </li>
+          </ol>
+        </nav>
+        <a href="{% url 'sales' %}" class="btn btn-info btn-lg btn-block" role="button">Go to Sales</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

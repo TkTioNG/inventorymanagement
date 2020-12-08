@@ -1,0 +1,37 @@
+{% extends "base.html" %} 
+
+{% block content %} 
+
+<h3>Product List</h3>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">
+    Below shows all the products available in the store.
+    </li>
+  </ol>
+</nav>
+
+{% if products %}
+<table class="table table-striped">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Product Name</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for product in products %}
+    <tr>
+      <th scope="row">{{product.product_id}}</th>
+      <td>{{product.name}}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+  <p>No products are available.</p>
+{% endif %}
+
+{% endblock %}

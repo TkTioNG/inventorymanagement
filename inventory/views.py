@@ -1,155 +1,155 @@
-from rest_framework import status
-from rest_framework import viewsets, mixins
-from rest_framework.decorators import action, api_view
-from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.models import User
-
-from inventory.models import Store, Material, MaterialStock, MaterialQuantity, Product
-from inventory.serializers import (
-    UserSerializer, StoreSerializer, MaterialSerializer, MaterialStockSerializer,
-    MaterialQuantitySerializer, ProductSerializer, RestockSerializer,
-    InventorySerializer, ProductCapacitySerializer, SalesSerializer
-)
-from inventory.utils import get_restock_total_price
+from django.shortcuts import render
+import requests
+import json
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+HEADERS = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Token 0bd31960612fe660d71c5ea164e5606f1328dee9'
+}
 
 
-class StoreViewSet(viewsets.ModelViewSet):
-    # queryset = Store.objects.all()
-    serializer_class = StoreSerializer
-
-    def get_queryset(self):
-        return self.request.user.stores.all()
+def index(request):
+    return render(request, 'inventory/index.html')
 
 
-class MaterialViewSet(viewsets.ModelViewSet):
-    serializer_class = MaterialSerializer
-
-    def get_queryset(self):
-        return Material.objects.filter(material_stocks__store__user=self.request.user)
-
-
-class MaterialStockViewSet(viewsets.ModelViewSet):
-    queryset = MaterialStock.objects.all()
-    serializer_class = MaterialStockSerializer
-
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        data = request.data
-        if instance.current_capacity > data["max_capacity"]:
-            raise ValidationError(
-                detail="max_capacity cannot be smaller than current_capacity")
-        if 'current_capacity' in data:
-            del data['current_capacity']
-
-        serializer = self.get_serializer(instance, data=data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        return Response(serializer.data)
+def products(request):
+    req = requests.get(
+        'http://localhost:8000/api/v1/product/',
+        headers=HEADERS
+    )
+    context = {'products': req.json()}
+    return render(request, 'inventory/products.html', context)
 
 
-class MaterialQuantityViewSet(viewsets.ModelViewSet):
-    queryset = MaterialQuantity.objects.all()
-    serializer_class = MaterialQuantitySerializer
+def materials(request):
+    req = requests.get(
+        'http://localhost:8000/api/v1/material/',
+        headers=HEADERS
+    )
+    context = {'materials': req.json()}
+    return render(request, 'inventory/materials.html', context)
 
 
-class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+def material_stocks(request):
+    req = requests.get(
+        'http://localhost:8000/api/v1/material-stock/',
+        headers=HEADERS
+    )
+    context = {'material_stocks': req.json()}
+    return render(request, 'inventory/material_stocks.html', context)
 
 
-class RestockViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    serializer_class = RestockSerializer
+def restock(request):
+    context = {
+        'materials': [],
+        'total_price': 0.00,
+        "success": False,
+        "error": None,
+    }
 
-    def get_queryset(self):
-        return MaterialStock.objects.filter(store__user=self.request.user)
+    if request.method == "POST":
+        post_data = request.POST
+        counter = 0
+        checker = post_data.__contains__("product"+str(counter)) \
+            and post_data.__contains__("quantity"+str(counter))
+        materials = []
+        while checker:
+            materials.append({
+                "material": post_data.get("product"+str(counter)),
+                "quantity": int(post_data.get("quantity"+str(counter)))
+            })
+            counter += 1
+            checker = post_data.__contains__("product"+str(counter)) \
+                and post_data.__contains__("quantity"+str(counter))
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        serializer_data = self.get_serializer(queryset, many=True).data
-
-        total_price = get_restock_total_price(serializer_data)
-
-        data = {
-            "materials": serializer_data,
-            "total_price": total_price,
+        restock_data = {
+            "materials": materials
         }
-        return Response(data, status=status.HTTP_200_OK)
-
-    def create(self, request, *args, **kwargs):
-        materials = request.data.get('materials')
-        for material in materials:
-            instance = self.get_queryset().get(material=material.get('material'))
-            serializer = self.get_serializer(
-                instance=instance,
-                data=material,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-        return self.list(request, *args, **kwargs)
-
-
-class InventoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    serializer_class = InventorySerializer
-
-    def get_queryset(self):
-        return MaterialStock.objects.filter(store__user=self.request.user)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        serializer = self.get_serializer(queryset, many=True)
-
-        data = {
-            "materials": serializer.data,
-        }
-        return Response(data, status=status.HTTP_200_OK)
-
-
-class ProductCapacityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    serializer_class = ProductCapacitySerializer
-
-    def get_queryset(self):
-        return Store.objects.get(user=self.request.user)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        serializer = self.get_serializer(queryset)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class SalesViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
-    serializer_class = SalesSerializer
-
-    def get_queryset(self):
-        return Store.objects.get(user=self.request.user)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        serializer = self.get_serializer(queryset)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data,
-            instance=self.get_queryset()
+        post_req = requests.post(
+            'http://localhost:8000/api/v1/restock/',
+            json=restock_data,
+            headers=HEADERS
         )
+        if post_req.status_code == 200:
+            context["success"] = True
+        else:
+            context["error"] = post_req.json()
 
-        serializer.is_valid(raise_exception=True)
+    req = requests.get(
+        'http://localhost:8000/api/v1/restock/',
+        headers=HEADERS
+    )
+    data_json = req.json()
 
-        serializer.save()
+    context['materials'] = data_json.get('materials', [])
+    context['total_price'] = data_json.get('total_price', 0.00)
 
-        return Response(serializer.data)
+    return render(request, 'inventory/restock.html', context)
+
+
+def inventory(request):
+    req = requests.get(
+        'http://localhost:8000/api/v1/inventory/',
+        headers=HEADERS
+    )
+    data_json = req.json()
+    context = {
+        'materials': data_json.get('materials', []),
+    }
+    return render(request, 'inventory/inventory.html', context)
+
+
+def productCapacity(request):
+    req = requests.get(
+        'http://localhost:8000/api/v1/product-capacity/',
+        headers=HEADERS
+    )
+    data_json = req.json()
+    context = {
+        'remaining_capacities': data_json.get('remaining_capacities', [])
+    }
+    return render(request, 'inventory/product_capacity.html', context)
+
+
+def sales(request):
+    context = {
+        "success": False,
+        "data": None,
+        "error": None,
+    }
+    if request.method == "POST":
+        post_data = request.POST
+        counter = 0
+        checker = post_data.__contains__("product"+str(counter)) \
+            and post_data.__contains__("quantity"+str(counter))
+        sale = []
+        while checker:
+            sale.append({
+                "product": post_data.get("product"+str(counter)),
+                "quantity": int(post_data.get("quantity"+str(counter)))
+            })
+            counter += 1
+            checker = post_data.__contains__("product"+str(counter)) \
+                and post_data.__contains__("quantity"+str(counter))
+
+        sales_data = {
+            "sale": sale
+        }
+        post_req = requests.post(
+            'http://localhost:8000/api/v1/sales/',
+            json=sales_data,
+            headers=HEADERS
+        )
+        if post_req.status_code == 200:
+            context["success"] = True
+            context["data"] = post_req.json().get("sale", [])
+        else:
+            context["error"] = post_req.json()
+
+    req = requests.get(
+        'http://localhost:8000/api/v1/product/',
+        headers=HEADERS
+    )
+    context['products'] = req.json()
+    return render(request, 'inventory/sales.html', context)

@@ -1,0 +1,43 @@
+{% extends "base.html" %} 
+
+{% block content %} 
+
+<h3>Inventory</h3>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">
+    Below are the inventory details for each product in the store.
+    </li>
+  </ol>
+</nav>
+
+{% if materials %}
+<table class="table table-striped">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Material Name</th>
+      <th scope="col">Max Capacity</th>
+      <th scope="col">Min Capacity</th>
+      <th scope="col">%</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for material in materials %}
+    <tr>
+      <th scope="row">{{ material.material }}</th>
+      <td>{{ material.material }}</td>
+      <td>{{ material.max_capacity }}</td>
+      <td>{{ material.current_capacity }}</td>
+      <td>{{ material.percentage_of_capacity|floatformat:2 }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% else %}
+  <p>No details are available.</p>
+{% endif %}
+
+{% endblock %}

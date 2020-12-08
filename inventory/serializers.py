@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 from inventory.models import Store, Material, MaterialStock, MaterialQuantity, Product
+from inventory.services.product import get_product_remaining_capacities
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,6 +49,7 @@ class RestockSerializer(serializers.ModelSerializer):
         return obj.max_capacity - obj.current_capacity
 
     def validate_quantity(self, quantity):
+        # quantity must be an integer
         if not isinstance(quantity, int):
             raise ValidationError(detail="quantity is not an integer")
         return quantity
@@ -86,27 +88,21 @@ class ProductCapacitySerializer(serializers.ModelSerializer):
     remaining_capacities = serializers.SerializerMethodField()
 
     def get_remaining_capacities(self, obj):
-        data = []
-        for product in obj.products.all():
-            material_quantities_need = MaterialQuantity.objects.filter(
-                product=product
-            )
-            material_quantity_list = []
-            for material_quantity in material_quantities_need:
-                quantity_needed = material_quantity.quantity
-                material_stock = obj.material_stocks.get(
-                    material=material_quantity.ingredient
-                )
-                current_quantity = material_stock.current_capacity
-                material_quantity_list.append(
-                    int(current_quantity / quantity_needed)
-                )
-            data.append({
-                'product': product.product_id,
-                'quantity': min(material_quantity_list, default=0),
-            })
+        return get_product_remaining_capacities(obj)
 
-        return data
+    def validate_remaining_capacities(self, remaining_capacities):
+        # remaining_capacity should be a list
+        if not isinstance(remaining_capacities, list):
+            raise ValidationError(
+                detail="Incorrect format id obtained"
+            )
+        for product in remaining_capacities:
+            # product and quantity key must exist
+            if "product" not in product or "quantity" not in product:
+                raise ValidationError(
+                    detail="Missing information in remaining_capacities"
+                )
+        return remaining_capacities
 
     class Meta:
         model = Store
@@ -118,72 +114,67 @@ class SalesSerializer(serializers.Serializer):
     sale = serializers.SerializerMethodField()
 
     def get_sale(self, obj):
-        data = []
-        for product in obj.products.all():
-            material_quantities_need = MaterialQuantity.objects.filter(
-                product=product
-            )
-            material_quantity_list = []
-            for material_quantity in material_quantities_need:
-                quantity_needed = material_quantity.quantity
-                material_stock = obj.material_stocks.get(
-                    material=material_quantity.ingredient
-                )
-                current_quantity = material_stock.current_capacity
-                material_quantity_list.append(
-                    int(current_quantity / quantity_needed)
-                )
-            data.append({
-                'product': product.product_id,
-                'quantity': min(material_quantity_list, default=0),
-            })
-
-        return data
+        return get_product_remaining_capacities(obj)
 
     def is_valid(self, raise_exception=False):
-        assert hasattr(self, 'initial_data'), (
-            'Cannot call `.is_valid()` as no `data=` keyword argument was '
-            'passed when instantiating the serializer instance.'
-        )
+        super().is_valid(raise_exception)
 
-        if not hasattr(self, '_validated_data'):
-            try:
-                sale = self.initial_data.get("sale")
-                for product_sold in sale:
-                    sold_quantity = product_sold.get('quantity')
-                    if not isinstance(sold_quantity, int) or sold_quantity < 0:
-                        raise ValidationError(
-                            detail="Sold quantity should be valid integer"
-                        )
-                    material_quantities_need = MaterialQuantity.objects.filter(
-                        product=product_sold.get('product')
-                    )
-                    for material_quantity in material_quantities_need:
-                        material_quantity_needed = material_quantity.quantity
-                        material_stock_obj = self.instance.material_stocks.get(
-                            material=material_quantity.ingredient
-                        )
+        if "sale" not in self.initial_data:
+            raise ValidationError(detail="Missing Information in sales")
 
-                        if (material_stock_obj.current_capacity < material_quantity_needed * sold_quantity):
-                            raise ValidationError(
-                                detail="Ingredient - {0} is not enough for product - {1}"
-                                .format(
-                                    material_quantity.ingredient,
-                                    material_quantity.product
-                                )
-                            )
+        # if sale is post, there must be products exist in the data
+        sale = self.initial_data.get("sale")
+        if not bool(sale):
+            raise ValidationError(
+                detail="No product is sold"
+            )
 
-                self._validated_data = self.initial_data
-            except ValidationError as exc:
-                self._validated_data = {}
-                self._errors = exc.detail
-            else:
-                self._errors = {}
+        for product_sold in sale:
+            # product and quantity key must be exist
+            if "product" not in product_sold or "quantity" not in product_sold:
+                raise ValidationError(
+                    detail="Missing Information in products of sales"
+                )
 
-        if self._errors and raise_exception:
-            raise ValidationError(self._errors)
+            sold_quantity = product_sold.get('quantity')
+            if not isinstance(sold_quantity, int) or sold_quantity < 0:
+                raise ValidationError(
+                    detail="Sold quantity should be valid integer"
+                )
+            materials_needed = MaterialQuantity.objects.filter(
+                product=product_sold.get('product')
+            )
+            if materials_needed.count() > 0:
+                self.validate_material_sufficiency(
+                    materials_needed, sold_quantity
+                )
+
+        self._validated_data["sale"] = self.initial_data["sale"]
 
         return not bool(self._errors)
+
+    def validate_material_sufficiency(self, materials_needed, sold_quantity):
+        # Check the sufficiency of the material, if not enough, raise error
+        for material in materials_needed:
+            material_quantity = material.quantity
+            try:
+                material_stock_obj = self.instance.material_stocks.get(
+                    material=material.ingredient
+                )
+            except MaterialStock.DoesNotExist:
+                raise ValidationError(
+                    detail="Ingredient is not found in the store"
+                )
+
+            if material_stock_obj.current_capacity < material_quantity * sold_quantity:
+                raise ValidationError(
+                    detail="Ingredient - {0} is not enough for product - {1}"
+                    .format(
+                        material.ingredient,
+                        material.product
+                    )
+                )
+        return materials_needed
 
     def update(self, instance, validated_data):
         sale = self.validated_data.get('sale')
@@ -195,11 +186,14 @@ class SalesSerializer(serializers.Serializer):
             )
             for material_quantity in material_quantities_need:
                 material_quantity_needed = material_quantity.quantity
+                # validatation is done before update
                 material_stock_obj = self.instance.material_stocks.get(
                     material=material_quantity.ingredient
                 )
-                material_stock_obj.current_capacity = material_stock_obj.current_capacity - \
-                    material_quantity_needed * sold_quantity
+                material_stock_obj.current_capacity = \
+                    material_stock_obj.current_capacity \
+                    - material_quantity_needed * sold_quantity
+
                 material_stock_obj.save()
 
         return self.instance
