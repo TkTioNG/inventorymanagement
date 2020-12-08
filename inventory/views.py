@@ -10,8 +10,7 @@ HEADERS = {
 
 
 def index(request):
-    context = {'latest_question_list': 'latest_question_list'}
-    return render(request, 'inventory/index.html', context)
+    return render(request, 'inventory/index.html')
 
 
 def products(request):
@@ -19,7 +18,6 @@ def products(request):
         'http://localhost:8000/api/v1/product/',
         headers=HEADERS
     )
-    print(req.json())
     context = {'products': req.json()}
     return render(request, 'inventory/products.html', context)
 
@@ -29,7 +27,6 @@ def materials(request):
         'http://localhost:8000/api/v1/material/',
         headers=HEADERS
     )
-    print(req.json())
     context = {'materials': req.json()}
     return render(request, 'inventory/materials.html', context)
 
@@ -39,22 +36,55 @@ def material_stocks(request):
         'http://localhost:8000/api/v1/material-stock/',
         headers=HEADERS
     )
-    print(req.json())
     context = {'material_stocks': req.json()}
     return render(request, 'inventory/material_stocks.html', context)
 
 
 def restock(request):
+    context = {
+        'materials': [],
+        'total_price': 0.00,
+        "success": False,
+        "error": None,
+    }
+
+    if request.method == "POST":
+        post_data = request.POST
+        counter = 0
+        checker = post_data.__contains__("product"+str(counter)) \
+            and post_data.__contains__("quantity"+str(counter))
+        materials = []
+        while checker:
+            materials.append({
+                "material": post_data.get("product"+str(counter)),
+                "quantity": int(post_data.get("quantity"+str(counter)))
+            })
+            counter += 1
+            checker = post_data.__contains__("product"+str(counter)) \
+                and post_data.__contains__("quantity"+str(counter))
+
+        restock_data = {
+            "materials": materials
+        }
+        post_req = requests.post(
+            'http://localhost:8000/api/v1/restock/',
+            json=restock_data,
+            headers=HEADERS
+        )
+        if post_req.status_code == 200:
+            context["success"] = True
+        else:
+            context["error"] = post_req.json()
+
     req = requests.get(
         'http://localhost:8000/api/v1/restock/',
         headers=HEADERS
     )
-    print(req.json())
     data_json = req.json()
-    context = {
-        'materials': data_json.get('materials', []),
-        'total_price': data_json.get('total_price', 0.00)
-    }
+
+    context['materials'] = data_json.get('materials', [])
+    context['total_price'] = data_json.get('total_price', 0.00)
+
     return render(request, 'inventory/restock.html', context)
 
 
@@ -63,7 +93,6 @@ def inventory(request):
         'http://localhost:8000/api/v1/inventory/',
         headers=HEADERS
     )
-    print(req.json())
     data_json = req.json()
     context = {
         'materials': data_json.get('materials', []),
@@ -76,7 +105,6 @@ def productCapacity(request):
         'http://localhost:8000/api/v1/product-capacity/',
         headers=HEADERS
     )
-    print(req.json())
     data_json = req.json()
     context = {
         'remaining_capacities': data_json.get('remaining_capacities', [])
@@ -113,7 +141,6 @@ def sales(request):
             json=sales_data,
             headers=HEADERS
         )
-        print(post_req.status_code)
         if post_req.status_code == 200:
             context["success"] = True
             context["data"] = post_req.json().get("sale", [])
@@ -125,5 +152,4 @@ def sales(request):
         headers=HEADERS
     )
     context['products'] = req.json()
-    print(context)
     return render(request, 'inventory/sales.html', context)

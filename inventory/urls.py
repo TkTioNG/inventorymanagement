@@ -25,7 +25,7 @@ urlpatterns = [
     path('', views.index),
     path('products', views.products, name="products"),
     path('materials', views.materials, name="materials"),
-    path('material_stocks', views.material_stocks, name="material_stocks"),
+    path('material-stock', views.material_stocks, name="material-stock"),
     path('restock', views.restock, name="restock"),
     path('inventory', views.inventory, name="inventory"),
     path('product-capacity', views.productCapacity, name="product-capacity"),

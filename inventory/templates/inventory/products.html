@@ -4,6 +4,14 @@
 
 <h3>Product List</h3>
 
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">
+    Below shows all the products available in the store.
+    </li>
+  </ol>
+</nav>
+
 {% if products %}
 <table class="table table-striped">
   <thead class="thead-dark">
@@ -23,7 +31,7 @@
 </table>
 
 {% else %}
-  <p>No polls are available.</p>
+  <p>No products are available.</p>
 {% endif %}
 
 {% endblock %}
