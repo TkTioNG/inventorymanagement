@@ -10,44 +10,126 @@
 
 <script src="{% static 'js/sales.js' %}"></script>
 
-<table class="table table-hover sales-list">
-  <colgroup>
-    <col class="w-50">
-    <col class="w-25">
-    <col class="w-25">
-  </colgroup>
-  <thead>
+{% if success %}
+  {% if data %}
+  <div id="successModal" class="modal fade show" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Adding sales process is successful</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <h5>Remaining sales details:</h5>
+          <table class="table table-hover" style="width: 90%; margin: 5px auto;">
+            <colgroup>
+              <col class="w-50">
+              <col class="w-25">
+              <col class="w-25">
+            </colgroup>
+            <thead class="thead-dark">
+              <tr>
+                <td>Product Name</td>
+                <td>Remaining quantity</td>
+              </tr>
+            </thead>
+            <tbody>
+            {% for sale in data %}
+              <tr>
+                <td>{{ sale.product }}</td>
+                <td>{{ sale.quantity }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(document).ready(function(){
+        $("#successModal").modal('show');
+    });
+  </script>
+  {% endif %}
+{% else %}
+  {% if error %}
+  <div id="errorModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add sales process is unsuccessful</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <h5>Problem:</h5>
+          {% for err in error %}
+            <p>{{ err }}</p>
+          {% endfor %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(document).ready(function(){
+        $("#errorModal").modal('show');
+    });
+  </script>
+  {% endif %}
+{% endif %}
+
+<form action="/sales" method="post">
+  {% csrf_token %}
+  <table class="table table-hover sales-list">
+    <colgroup>
+      <col class="w-50">
+      <col class="w-25">
+      <col class="w-25">
+    </colgroup>
+    <thead>
+        <tr>
+          <td>Product Name</td>
+          <td>Sold Quantity</td>
+          <td></td>
+        </tr>
+    </thead>
+    <tbody>
       <tr>
-        <td>Product Name</td>
-        <td>Sold Quantity</td>
-        <td></td>
       </tr>
-  </thead>
-  <tbody>
-    <tr>
-    </tr>
-  </tbody>
-  <tfoot>
-    <tr>
-      <td>
-        <select class="form-control" id="add_product">
-        {% if products %}
-        {% for product in products %}
-          <option value={{ product.product_id }}>{{ product.name }}</option>
-        {% endfor %}
-        {% else %}
-          <option value="0">No available option</option>
-        {% endif %}   
-        </select>
-      </td>
-      <td>
-        <input type="number" class="form-control" value="0"  id="add_quantity" />
-      </td>
-      <td>
-        <input type="button" class="btn btn-primary btn-block " id="addrow" value="Add Row" />
-      </td>
-    </tr>
-  </tfoot>
-</table>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>
+          <select class="form-control" id="add_product">
+          {% if products %}
+          {% for product in products %}
+            <option value={{ product.product_id }}>{{ product.name }}</option>
+          {% endfor %}
+          {% else %}
+            <option value="0">No available option</option>
+          {% endif %}   
+          </select>
+        </td>
+        <td>
+          <input type="number" class="form-control" value="0"  id="add_quantity" />
+        </td>
+        <td>
+          <input type="button" class="btn btn-info btn-block" id="addrow" value="Add" />
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+  <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+</form>
 
 {% endblock %}

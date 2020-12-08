@@ -85,14 +85,45 @@ def productCapacity(request):
 
 
 def sales(request):
+    context = {
+        "success": False,
+        "data": None,
+        "error": None,
+    }
+    if request.method == "POST":
+        post_data = request.POST
+        counter = 0
+        checker = post_data.__contains__("product"+str(counter)) \
+            and post_data.__contains__("quantity"+str(counter))
+        sale = []
+        while checker:
+            sale.append({
+                "product": post_data.get("product"+str(counter)),
+                "quantity": int(post_data.get("quantity"+str(counter)))
+            })
+            counter += 1
+            checker = post_data.__contains__("product"+str(counter)) \
+                and post_data.__contains__("quantity"+str(counter))
+
+        sales_data = {
+            "sale": sale
+        }
+        post_req = requests.post(
+            'http://localhost:8000/api/v1/sales/',
+            json=sales_data,
+            headers=HEADERS
+        )
+        print(post_req.status_code)
+        if post_req.status_code == 200:
+            context["success"] = True
+            context["data"] = post_req.json().get("sale", [])
+        else:
+            context["error"] = post_req.json()
+
     req = requests.get(
         'http://localhost:8000/api/v1/product/',
         headers=HEADERS
     )
-    data = json.dumps(req.json())
-    print(data)
-    print(type(data))
-    context = {
-        'products': req.json(),
-    }
+    context['products'] = req.json()
+    print(context)
     return render(request, 'inventory/sales.html', context)
